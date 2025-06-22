@@ -9,10 +9,8 @@ const { authenticateToken, authorizeRoles } = require('../middleware/auth');
 
 const router = express.Router();
 
-router.get('/', authenticateToken, authorizeRoles('admin', 'trainer'), getWorkoutPlans);
-router.get('/my-plans', authenticateToken, authorizeRoles('member'), getMyWorkoutPlans);
-router.post('/', authenticateToken, authorizeRoles('admin', 'trainer'), createWorkoutPlan);
-router.put('/:id', authenticateToken, authorizeRoles('admin', 'trainer'), updateWorkoutPlan);
-router.delete('/:id', authenticateToken, authorizeRoles('admin', 'trainer'), deleteWorkoutPlan);
+router.get('/', authenticateToken, authorizeRoles('admin', 'teacher'), getAllEnrollments);
+router.post('/', authenticateToken, authorizeRoles('admin', 'teacher'), createEnrollment);
+router.delete('/:id', authenticateToken, authorizeRoles('admin', 'teacher'), deleteEnrollment);
 
 module.exports = router;

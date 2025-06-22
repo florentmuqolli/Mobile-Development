@@ -6,18 +6,19 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser');
 
 const authRoutes = require('./routes/authRoutes');
-const memberRoutes = require('./routes/memberRoutes');
-const trainerRoutes = require('./routes/trainerRoutes');
-//const workoutRotues = require('./routes/workoutRoutes');
-const subscriptionRoutes = require('./routes/subscriptionRoutes');
-const workoutPlanRoutes = require('./routes/workoutPlanRoutes')
+const studentRoutes = require('./routes/studentRoutes');
+const teacherRoutes = require('./routes/teacherRoutes');
+const submissionRoutes = require('./routes/submissionRoutes');
+const enrollmentRoutes = require('./routes/enrollmentRoutes');
+const classRoutes = require('./routes/classRoutes');
+const assignmentRoutes = require('./routes/assignmentRoutes');
 
 const app = express();
 
 app.use(express.json());
 
 app.use(cors({
-  origin: 'http://localhost:3000',
+  origin: true,
   credentials: true
 }));
 
@@ -42,11 +43,12 @@ mysqlPool.getConnection()
 
 
 app.use('/api/auth', authRoutes);
-app.use('/api/members', memberRoutes);
-app.use('/api/trainers', trainerRoutes);
-//app.use('/api/workout', workoutRotues);
-app.use('/api/subscriptions', subscriptionRoutes);
-app.use('/api/workout-plans', workoutPlanRoutes);
+app.use('/api/students', studentRoutes);
+app.use('/api/teachers', teacherRoutes);
+app.use('/api/enrollment', enrollmentRoutes);
+app.use('/api/submission', submissionRoutes);
+app.use('/api/class', classRoutes);
+app.use('/api/assignment', assignmentRoutes);
 
 
 app.use((err, req, res, next) => {
