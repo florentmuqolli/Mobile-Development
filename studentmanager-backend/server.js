@@ -25,10 +25,10 @@ app.use('/api/auth', authRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/students', studentRoutes);
 app.use('/api/teachers', teacherRoutes);
-app.use('api/class', classRoutes);
-app.use('api/attendance', attendanceRoutes);
-app.use('api/grades', gradeRoutes);
-app.use('api/subjects', subjectRoutes);
+app.use('/api/class', classRoutes);
+app.use('/api/attendance', attendanceRoutes);
+app.use('/api/grades', gradeRoutes);
+app.use('/api/subjects', subjectRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
