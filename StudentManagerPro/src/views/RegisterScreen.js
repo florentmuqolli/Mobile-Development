@@ -6,18 +6,19 @@ import {
   TouchableOpacity, 
   StyleSheet, 
   ActivityIndicator, 
-  Alert,
-  ScrollView,
   KeyboardAvoidingView,
   Platform,
+  Image,
+  SafeAreaView,
+  ScrollView
 } from 'react-native';
 import Toast from "react-native-toast-message";
 import axiosInstance from '../services/axiosInstance'; 
 import { useNavigation } from '@react-navigation/native';
+import ScreenWrapper from '../hooks/ScreenWrapper';
 
 const RegisterScreen = () => {
   const navigation = useNavigation();
-
   const [form, setForm] = useState({ name: '', email: '', password: '' });
   const [loading, setLoading] = useState(false);
 
@@ -27,27 +28,27 @@ const RegisterScreen = () => {
 
   const handleSubmit = async () => {
     if (form.name.length < 3) {
-        Toast.show({
-            type: "error",
-            text1: "Validation Error",
-            text2: "Please provide your full name (at least 3 characters).",
-        });
+      Toast.show({
+        type: "error",
+        text1: "Validation Error",
+        text2: "Please provide your full name (at least 3 characters).",
+      });
       return;
     }
     if (!form.email.includes('@')) {
-        Toast.show({
-            type: "error",
-            text1: "Validation Error",
-            text2: "Please provide a valid email.",
-        });
+      Toast.show({
+        type: "error",
+        text1: "Validation Error",
+        text2: "Please provide a valid email.",
+      });
       return;
     }
     if (form.password.length < 6) {
-        Toast.show({
-            type: "error",
-            text1: "Validation Error",
-            text2: "Password must be at least 6 characters.",
-        });
+      Toast.show({
+        type: "error",
+        text1: "Validation Error",
+        text2: "Password must be at least 6 characters.",
+      });
       return;
     }
 
@@ -57,170 +58,270 @@ const RegisterScreen = () => {
 
       Toast.show({
         type: "success",
-        text1: "Registered",
-       }); 
-       setTimeout(() => {
+        text1: "Registered successfully!",
+        text2: "You can now sign in with your credentials.",
+      });
+      
+      setTimeout(() => {
         navigation.navigate('Login');
-      }, 1000);
+      }, 1500);
     } catch (error) {
-      console.error(error);
       const message = error.response?.data?.message || 'Something went wrong';
-      Alert.alert('Error', message);
+      Toast.show({
+        type: "error",
+        text1: "Registration Failed",
+        text2: message,
+      });
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: '#141414' }}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
-      <ScrollView contentContainerStyle={styles.container}>
-        <View style={styles.card}>
-          <Text style={styles.header}>Join Our Community</Text>
-          <Text style={styles.subHeader}>Create your account</Text>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Full Name</Text>
-            <TextInput
-              placeholder="John Doe"
-              placeholderTextColor="#aaa"
-              value={form.name}
-              onChangeText={text => handleChange('name', text)}
-              style={styles.input}
-              autoCapitalize="words"
+    <ScreenWrapper>
+    <SafeAreaView style={styles.safeArea}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.container}
+      >
+        <ScrollView contentContainerStyle={styles.scrollContainer}>
+          <View style={styles.header}>
+            <Image 
+              source={require('../assets/logo.png')} 
+              style={styles.logo}
             />
+            <Text style={styles.title}>Create Account</Text>
+            <Text style={styles.subtitle}>Join our community today</Text>
           </View>
 
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Email Address</Text>
-            <TextInput
-              placeholder="your@email.com"
-              placeholderTextColor="#aaa"
-              keyboardType="email-address"
-              autoCapitalize="none"
-              value={form.email}
-              onChangeText={text => handleChange('email', text)}
-              style={styles.input}
-            />
-          </View>
+          <View style={styles.formContainer}>
+            <View style={styles.inputContainer}>
+              <Text style={styles.label}>Full Name</Text>
+              <TextInput
+                placeholder="John Doe"
+                placeholderTextColor="#999"
+                value={form.name}
+                onChangeText={text => handleChange('name', text)}
+                style={styles.input}
+                autoCapitalize="words"
+              />
+            </View>
 
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Password</Text>
-            <TextInput
-              placeholder="••••••••"
-              placeholderTextColor="#aaa"
-              secureTextEntry
-              value={form.password}
-              onChangeText={text => handleChange('password', text)}
-              style={styles.input}
-            />
-            <Text style={styles.helperText}>At least 6 characters</Text>
-          </View>
+            <View style={styles.inputContainer}>
+              <Text style={styles.label}>Email Address</Text>
+              <TextInput
+                placeholder="your@email.com"
+                placeholderTextColor="#999"
+                keyboardType="email-address"
+                autoCapitalize="none"
+                value={form.email}
+                onChangeText={text => handleChange('email', text)}
+                style={styles.input}
+              />
+            </View>
 
-          <TouchableOpacity
-            style={styles.button}
-            onPress={handleSubmit}
-            disabled={loading}
-          >
-            {loading ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.buttonText}>Create Account</Text>
-            )}
-          </TouchableOpacity>
+            <View style={styles.inputContainer}>
+              <Text style={styles.label}>Password</Text>
+              <TextInput
+                placeholder="••••••••"
+                placeholderTextColor="#999"
+                secureTextEntry
+                value={form.password}
+                onChangeText={text => handleChange('password', text)}
+                style={styles.input}
+              />
+              <Text style={styles.helperText}>Must be at least 6 characters</Text>
+            </View>
 
-          <Text style={styles.terms}>
-            By registering, you agree to our Terms and Privacy Policy
-          </Text>
+            <TouchableOpacity
+              style={[
+                styles.registerButton,
+                (form.password.length < 6 || form.name.length < 3 || !form.email.includes('@')) && 
+                styles.disabledButton
+              ]}
+              onPress={handleSubmit}
+              disabled={loading || form.password.length < 6 || form.name.length < 3 || !form.email.includes('@')}
+            >
+              {loading ? (
+                <ActivityIndicator color="#FFF" />
+              ) : (
+                <Text style={styles.buttonText}>Create Account</Text>
+              )}
+            </TouchableOpacity>
 
-          <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-            <Text style={styles.signInLink}>
-              Already have an account? <Text style={{ color: '#dc3545' }}>Sign in</Text>
+            <Text style={styles.termsText}>
+              By registering, you agree to our{' '}
+              <Text style={styles.linkText}>Terms</Text> and{' '}
+              <Text style={styles.linkText}>Privacy Policy</Text>
             </Text>
-          </TouchableOpacity>
 
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-            <Text style={styles.backButtonText}>← Back to Home</Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+            <View style={styles.dividerContainer}>
+              <View style={styles.dividerLine} />
+              <Text style={styles.dividerText}>or</Text>
+              <View style={styles.dividerLine} />
+            </View>
+
+            <TouchableOpacity style={styles.socialButton}>
+              <Image 
+                source={require('../assets/google-icon.png')} 
+                style={styles.socialIcon}
+              />
+              <Text style={styles.socialButtonText}>Continue with Google</Text>
+            </TouchableOpacity>
+
+            <View style={styles.loginPrompt}>
+              <Text style={styles.loginText}>Already have an account?</Text>
+              <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+                <Text style={styles.loginLink}> Sign In</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
+    </ScreenWrapper>
   );
 };
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#F8F9FA',
+  },
   container: {
+    flex: 1,
+  },
+  scrollContainer: {
     flexGrow: 1,
     justifyContent: 'center',
-    padding: 20,
-  },
-  card: {
-    backgroundColor: '#222',
-    borderRadius: 10,
-    padding: 20,
   },
   header: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: '#dc3545',
-    marginBottom: 5,
+    alignItems: 'center',
+    marginBottom: 40,
+    paddingHorizontal: 24,
   },
-  subHeader: {
-    color: '#ccc',
+  logo: {
+    width: 80,
+    height: 80,
     marginBottom: 20,
   },
-  inputGroup: {
-    marginBottom: 15,
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#2D3436',
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: '#636E72',
+  },
+  formContainer: {
+    paddingHorizontal: 24,
+  },
+  inputContainer: {
+    marginBottom: 20,
   },
   label: {
-    color: '#ddd',
-    marginBottom: 5,
     fontSize: 14,
+    color: '#2D3436',
+    marginBottom: 8,
+    fontWeight: '500',
   },
   input: {
-    backgroundColor: '#333',
-    color: 'white',
-    borderRadius: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    backgroundColor: '#FFF',
+    borderWidth: 1,
+    borderColor: '#DFE6E9',
+    borderRadius: 12,
+    padding: 16,
+    fontSize: 16,
+    color: '#2D3436',
   },
   helperText: {
-    color: '#aaa',
+    color: '#636E72',
     fontSize: 12,
-    marginTop: 3,
+    marginTop: 8,
   },
-  button: {
-    backgroundColor: '#dc3545',
-    borderRadius: 6,
-    paddingVertical: 12,
+  registerButton: {
+    backgroundColor: '#6C5CE7',
+    borderRadius: 12,
+    padding: 18,
     alignItems: 'center',
+    justifyContent: 'center',
     marginTop: 10,
+    shadowColor: '#6C5CE7',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  disabledButton: {
+    opacity: 0.6,
   },
   buttonText: {
-    color: '#fff',
-    fontWeight: '600',
+    color: '#FFF',
     fontSize: 16,
+    fontWeight: '600',
   },
-  terms: {
-    color: '#888',
+  termsText: {
+    color: '#636E72',
     fontSize: 12,
     textAlign: 'center',
-    marginVertical: 10,
+    marginTop: 16,
+    marginBottom: 24,
   },
-  signInLink: {
-    color: '#ccc',
-    fontSize: 14,
-    textAlign: 'center',
+  linkText: {
+    color: '#6C5CE7',
+    fontWeight: '500',
   },
-  backButton: {
-    marginTop: 15,
+  dividerContainer: {
+    flexDirection: 'row',
     alignItems: 'center',
+    marginVertical: 24,
   },
-  backButtonText: {
-    color: '#aaa',
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#DFE6E9',
+  },
+  dividerText: {
+    color: '#636E72',
+    marginHorizontal: 10,
     fontSize: 14,
+  },
+  socialButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FFF',
+    borderWidth: 1,
+    borderColor: '#DFE6E9',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 20,
+  },
+  socialIcon: {
+    width: 20,
+    height: 20,
+    marginRight: 10,
+  },
+  socialButtonText: {
+    color: '#2D3436',
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  loginPrompt: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: 10,
+  },
+  loginText: {
+    color: '#636E72',
+    fontSize: 14,
+  },
+  loginLink: {
+    color: '#6C5CE7',
+    fontSize: 14,
+    fontWeight: '600',
   },
 });
 

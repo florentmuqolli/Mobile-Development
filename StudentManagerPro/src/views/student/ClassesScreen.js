@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image } from "react-native";
+import ScreenWrapper from "../../hooks/ScreenWrapper";
 
 const classes = [
   { 
@@ -50,6 +51,7 @@ const ClassesScreen = () => {
   );
 
   return (
+    <ScreenWrapper>
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>Your Classes</Text>
@@ -65,6 +67,7 @@ const ClassesScreen = () => {
         showsVerticalScrollIndicator={false}
       />
     </View>
+    </ScreenWrapper>
   );
 };
 

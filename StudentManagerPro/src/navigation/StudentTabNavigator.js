@@ -17,7 +17,7 @@ import {
   CalendarFilledIcon,
   ProfileIcon,
   ProfileFilledIcon
-} from '../assets/Icons'; 
+} from '../assets/Icons';
 
 const Tab = createBottomTabNavigator();
 
@@ -28,7 +28,8 @@ const StudentTabNavigator = () => {
         screenOptions={({ route }) => ({
           headerShown: false,
           tabBarStyle: styles.tabBar,
-          tabBarShowLabel: false,
+          tabBarShowLabel: true,
+          tabBarLabelStyle: styles.tabBarLabel,
           tabBarIcon: ({ focused }) => {
             const animatedValue = new Animated.Value(0);
             
@@ -41,42 +42,34 @@ const StudentTabNavigator = () => {
               animatedValue.setValue(0);
             }
             
-            const scale = animatedValue.interpolate({
-              inputRange: [0, 1],
-              outputRange: [1, 1.1],
-            });
-
             const translateY = animatedValue.interpolate({
               inputRange: [0, 1],
-              outputRange: [0, -15],
+              outputRange: [0, -10],
             });
 
             let icon;
-            let label;
             let badgeCount = 0;
 
             switch (route.name) {
               case 'Dashboard':
                 icon = focused ? <HomeFilledIcon /> : <HomeIcon />;
-                label = 'Home';
+                badgeCount = 0;
                 break;
               case 'Classes':
                 icon = focused ? <BookFilledIcon /> : <BookIcon />;
-                label = 'Classes';
-                badgeCount = 2; 
+                badgeCount = 2;
                 break;
               case 'Assignments':
                 icon = focused ? <AssignmentFilledIcon /> : <AssignmentIcon />;
-                label = 'Tasks';
-                badgeCount = 5; 
+                badgeCount = 5;
                 break;
               case 'Calendar':
                 icon = focused ? <CalendarFilledIcon /> : <CalendarIcon />;
-                label = 'Calendar';
+                badgeCount = 0;
                 break;
               case 'Profile':
                 icon = focused ? <ProfileFilledIcon /> : <ProfileIcon />;
-                label = 'Profile';
+                badgeCount = 0;
                 break;
             }
 
@@ -84,33 +77,49 @@ const StudentTabNavigator = () => {
               <Animated.View style={[
                 styles.tabButton,
                 {
-                  transform: [{ scale }, { translateY }],
+                  transform: [{ translateY }],
                 }
               ]}>
                 <View style={styles.iconContainer}>
                   {icon}
                   {badgeCount > 0 && (
                     <View style={styles.badge}>
-                      <Text style={styles.badgeText}>{badgeCount}</Text>
+                      <Text style={styles.badgeText}>
+                        {badgeCount > 9 ? '9+' : badgeCount}
+                      </Text>
                     </View>
                   )}
                 </View>
-                <Text style={[
-                  styles.tabLabel,
-                  focused && styles.tabLabelFocused
-                ]}>
-                  {label}
-                </Text>
               </Animated.View>
             );
           },
         })}
       >
-        <Tab.Screen name="Dashboard" component={DashboardScreen} />
-        <Tab.Screen name="Classes" component={ClassesScreen} />
-        <Tab.Screen name="Assignments" component={AssignmentsScreen} />
-        <Tab.Screen name="Calendar" component={CalendarScreen} />
-        <Tab.Screen name="Profile" component={ProfileScreen} />
+        <Tab.Screen 
+          name="Dashboard" 
+          component={DashboardScreen} 
+          options={{ tabBarLabel: 'Home' }}
+        />
+        <Tab.Screen 
+          name="Classes" 
+          component={ClassesScreen} 
+          options={{ tabBarLabel: 'Classes' }}
+        />
+        <Tab.Screen 
+          name="Assignments" 
+          component={AssignmentsScreen} 
+          options={{ tabBarLabel: 'Tasks' }}
+        />
+        <Tab.Screen 
+          name="Calendar" 
+          component={CalendarScreen} 
+          options={{ tabBarLabel: 'Calendar' }}
+        />
+        <Tab.Screen 
+          name="Profile" 
+          component={ProfileScreen} 
+          options={{ tabBarLabel: 'Profile' }}
+        />
       </Tab.Navigator>
     </View>
   );
@@ -136,27 +145,27 @@ const styles = StyleSheet.create({
     elevation: 10,
     borderTopWidth: 0,
     paddingHorizontal: 10,
+    justifyContent: 'center',
   },
   tabButton: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    height: '100%',
+    paddingTop: 8, 
   },
   iconContainer: {
     width: 24,
     height: 24,
     justifyContent: 'center',
     alignItems: 'center',
+    position: 'relative',
   },
-  tabLabel: {
+  tabBarLabel: {
     fontSize: 12,
-    marginTop: 5,
-    color: '#636E72',
-    fontWeight: '500',
-  },
-  tabLabelFocused: {
-    color: '#6C5CE7',
     fontWeight: '600',
+    marginBottom: 8, 
+    color: '#636E72',
   },
   badge: {
     position: 'absolute',
@@ -164,22 +173,16 @@ const styles = StyleSheet.create({
     top: -5,
     backgroundColor: '#FF7675',
     borderRadius: 10,
-    width: 18,
+    minWidth: 18,
     height: 18,
     justifyContent: 'center',
     alignItems: 'center',
+    paddingHorizontal: 4,
   },
   badgeText: {
     color: '#FFF',
     fontSize: 10,
     fontWeight: 'bold',
-  },
-  activeIndicator: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: '#6C5CE7',
-    marginTop: 4,
   },
 });
 

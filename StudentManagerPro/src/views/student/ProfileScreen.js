@@ -1,17 +1,18 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, ActivityIndicator, Image, TouchableOpacity } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import useLogout from "../../hooks/Logout";
+import ScreenWrapper from "../../hooks/ScreenWrapper";
 
 const ProfileScreen = () => {
   const [loading, setLoading] = useState(false);
+  const handleLogout = useLogout(setLoading);
   const [user, setUser] = useState({
     name: "John Doe",
     email: "student@example.com",
     studentId: "STD2025001",
     major: "Computer Science"
   });
-  const handleLogout = useLogout(setLoading);
 
   useEffect(() => {
     (async () => {
@@ -29,6 +30,7 @@ const ProfileScreen = () => {
   }
 
   return (
+    <ScreenWrapper>
     <View style={styles.container}>
       <View style={styles.profileHeader}>
         <Image 
@@ -72,6 +74,7 @@ const ProfileScreen = () => {
         <Text style={styles.logoutText}>Logout</Text>
       </TouchableOpacity>
     </View>
+    </ScreenWrapper>
   );
 };
 

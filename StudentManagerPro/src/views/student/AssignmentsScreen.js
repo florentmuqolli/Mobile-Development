@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image } from "react-native";
+import ScreenWrapper from "../../hooks/ScreenWrapper";
 
 const assignments = [
   { 
@@ -71,6 +72,7 @@ const AssignmentsScreen = () => {
   };
 
   return (
+    <ScreenWrapper>
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>Assignments</Text>
@@ -86,6 +88,7 @@ const AssignmentsScreen = () => {
         showsVerticalScrollIndicator={false}
       />
     </View>
+    </ScreenWrapper>
   );
 };
 

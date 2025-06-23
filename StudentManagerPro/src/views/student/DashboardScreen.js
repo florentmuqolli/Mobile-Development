@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
+import ScreenWrapper from '../../hooks/ScreenWrapper';
 
 const DashboardScreen = () => {
   const [name, setName] = useState('');
@@ -14,6 +15,7 @@ const DashboardScreen = () => {
   }, []);
 
   return (
+    <ScreenWrapper>
     <ScrollView style={styles.container}>
       <View style={styles.header}>
         <View>
@@ -83,6 +85,7 @@ const DashboardScreen = () => {
         </TouchableOpacity>
       </View>
     </ScrollView>
+    </ScreenWrapper>
   );
 };
 

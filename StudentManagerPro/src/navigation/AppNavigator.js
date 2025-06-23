@@ -4,6 +4,10 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import LoginScreen from '../views/LoginScreen';
 import RegisterScreen from '../views/RegisterScreen';
 import StudentTabNavigator from './StudentTabNavigator';
+import AdminDashboard from '../views/admin/Dashboard';
+import StudentManagementScreen from '../views/admin/StudentManagement';
+import TeacherManagementScreen from '../views/admin/TeacherManagement';
+import AddCourseScreen from '../views/admin/CourseManagement';
 
 const Stack = createNativeStackNavigator();
 
@@ -14,6 +18,10 @@ const AppNavigator = () => {
         <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
         <Stack.Screen name="Register" component={RegisterScreen} options={{ headerShown: false }} />
         <Stack.Screen name="StudentHome" component={StudentTabNavigator} options={{ headerShown: false }} />
+        <Stack.Screen name="AdminDashboard" component={AdminDashboard} />
+        <Stack.Screen name="StudentManagement" component={StudentManagementScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="TeacherManagement" component={TeacherManagementScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="AddCourse" component={AddCourseScreen} options={{ headerShown: false }} />
       </Stack.Navigator>
     </NavigationContainer>
   );

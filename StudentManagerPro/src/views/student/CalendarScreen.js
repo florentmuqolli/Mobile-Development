@@ -1,8 +1,10 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
+import ScreenWrapper from "../../hooks/ScreenWrapper";
 
 const CalendarScreen = () => {
   return (
+    <ScreenWrapper>
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>Calendar</Text>
@@ -65,6 +67,7 @@ const CalendarScreen = () => {
         </View>
       </View>
     </View>
+    </ScreenWrapper>
   );
 };
 
