@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import { View, Text, StyleSheet,ActivityIndicator, Button } from 'react-native';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import useLogout from "../hooks/Logout";
 
 const HomeScreen = ({ navigation }) => {
     const [loading, setLoading] = useState(false);
     const handleLogout = useLogout(setLoading);
+    const isLoggedIn = !!AsyncStorage.getItem("accessToken");
 
     if (loading) {
     return (
@@ -21,7 +23,9 @@ const HomeScreen = ({ navigation }) => {
 
       <View style={styles.buttonContainer}>
         <Button title="Go to Profile" onPress={() => navigation.navigate('Profile')} />
-        <Button title="Logout" color="#d9534f" onPress={handleLogout} />
+          {isLoggedIn &&
+          <Button title="Logout" color="#d9534f" onPress={handleLogout} />
+          }
       </View>
     </View>
   );

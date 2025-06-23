@@ -64,7 +64,7 @@ const Login = () => {
         } else if (response.data.user.role === "teacher") {
           navigation.replace("TeacherHome");
         } else {
-          navigation.replace("Home");
+          navigation.replace("StudentHome");
         }
       }, 1000);
     } catch (error) {
