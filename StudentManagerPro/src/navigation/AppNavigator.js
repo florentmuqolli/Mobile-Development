@@ -8,6 +8,7 @@ import AdminDashboard from '../views/admin/AdminDashboard';
 import StudentManagementScreen from '../views/admin/StudentManagement';
 import TeacherManagementScreen from '../views/admin/TeacherManagement';
 import AddCourseScreen from '../views/admin/CourseManagement';
+import ForgotPasswordScreen from '../hooks/ForgotPassword';
 
 const Stack = createNativeStackNavigator();
 
@@ -16,6 +17,7 @@ const AppNavigator = () => {
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Login">
         <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} options={{ headerShown: false }} />
         <Stack.Screen name="Register" component={RegisterScreen} options={{ headerShown: false }} />
         <Stack.Screen name="StudentHome" component={StudentTabNavigator} options={{ headerShown: false }} />
         <Stack.Screen name="AdminDashboard" component={AdminDashboard} />

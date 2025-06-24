@@ -1,5 +1,7 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
+const sendEmail = require('../utils/sendEmail');
 
 const generateToken = (user, secret, expiresIn) => {
   return jwt.sign({ id: user._id, role: user.role }, secret, { expiresIn });
@@ -120,3 +122,99 @@ exports.getUsersByRole = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+
+exports.forgotPassword = async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    const resetCode = user.generateResetCode();
+    await user.save({ validateBeforeSave: false });
+
+    const message = `
+      <h1>Password Reset Request</h1>
+      <p>Your password reset code is:</p>
+      <h2>${resetCode}</h2>
+      <p>This code will expire in 10 minutes.</p>
+      <p>If you didn't request this, ignore this email.</p>
+    `;
+
+    await sendEmail({
+      to: user.email,
+      subject: 'Password Reset Code',
+      html: message,
+    });
+
+    res.status(200).json({ message: 'Password reset code sent to your email' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Error sending reset code email' });
+  }
+};
+
+exports.verifyResetCode = async (req, res) => {
+  let { email, code } = req.body;
+
+  if (!email || !code) {
+    return res.status(400).json({ message: 'Email and code are required' });
+  }
+
+  email = email.trim().toLowerCase();
+  code = code.trim();
+
+  const hashedCode = crypto.createHash('sha256').update(code).digest('hex');
+
+  try {
+    const user = await User.findOne({
+      email,
+      resetPasswordCode: hashedCode,
+      resetPasswordExpire: { $gt: Date.now() }
+    });
+
+    if (!user) return res.status(400).json({ message: 'Invalid or expired code' });
+
+    res.status(200).json({ message: 'Code is valid' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error while verifying code' });
+  }
+};
+
+
+exports.resetPassword = async (req, res) => {
+  let { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({ message: 'Email and new password are required' });
+  }
+
+  email = email.trim().toLowerCase();
+  password = password.trim();
+
+  if (password.length < 6) {
+    return res.status(400).json({ message: 'Password must be at least 6 characters' });
+  }
+
+  try {
+    const user = await User.findOne({ email });
+
+    if (!user || !user.resetPasswordCode || user.resetPasswordExpire < Date.now()) {
+      return res.status(400).json({ message: 'Reset code expired or not verified' });
+    }
+
+    user.password = password;
+    user.resetPasswordCode = undefined;
+    user.resetPasswordExpire = undefined;
+
+    await user.save();
+
+    res.status(200).json({ message: 'Password updated successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error while resetting password' });
+  }
+};
+
+
