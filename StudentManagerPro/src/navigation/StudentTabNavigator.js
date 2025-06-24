@@ -1,7 +1,7 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { View, StyleSheet, Animated, Text } from 'react-native';
-import DashboardScreen from '../views/student/DashboardScreen';
+import StudentHome from '../views/student/StudentHome';
 import ClassesScreen from '../views/student/ClassesScreen';
 import AssignmentsScreen from '../views/student/AssignmentsScreen';
 import CalendarScreen from '../views/student/CalendarScreen';
@@ -51,7 +51,7 @@ const StudentTabNavigator = () => {
             let badgeCount = 0;
 
             switch (route.name) {
-              case 'Dashboard':
+              case 'StudentHome':
                 icon = focused ? <HomeFilledIcon /> : <HomeIcon />;
                 badgeCount = 0;
                 break;
@@ -96,8 +96,8 @@ const StudentTabNavigator = () => {
         })}
       >
         <Tab.Screen 
-          name="Dashboard" 
-          component={DashboardScreen} 
+          name="StudentHome" 
+          component={StudentHome} 
           options={{ tabBarLabel: 'Home' }}
         />
         <Tab.Screen 

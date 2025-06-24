@@ -21,10 +21,10 @@ exports.getStudentById = async (req, res) => {
 
 exports.createStudent = async (req, res) => {
   try {
-    const { name, email, phone, address } = req.body;
+    const { name, email, phone, address, status } = req.body;
     console.log("body: ",req.body);
-    const [result] = await Student.create({ name, email, phone, address });
-    res.status(201).json({ id: result.insertId, name, email, phone, address });
+    const [result] = await Student.create({ name, email, phone, address, status });
+    res.status(201).json({ id: result.insertId, name, email, phone, address, status });
   } catch (error) {
     console.error("Create Student error:", error);
     res.status(500).json({ message: 'Server error' });

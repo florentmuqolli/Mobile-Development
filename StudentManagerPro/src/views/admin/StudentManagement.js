@@ -1,34 +1,57 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import axiosInstance from '../../services/axiosInstance'; 
 import ScreenWrapper from '../../hooks/ScreenWrapper';
-import { 
-  SearchIcon, 
-  EditIcon,
-  DeleteIcon,
-  BackArrowIcon,
-  AddIcon
-} from '../../assets/Icons';
-
-const studentData = [
-  { id: '1', name: 'John Doe', email: 'john@university.edu', status: 'Active' },
-  { id: '2', name: 'Jane Smith', email: 'jane@university.edu', status: 'Active' },
-  { id: '3', name: 'Alex Johnson', email: 'alex@university.edu', status: 'Inactive' },
-];
+import { SearchIcon, EditIcon, DeleteIcon, BackArrowIcon, AddIcon } from '../../assets/Icons';
+import  StudentFormModal  from './utils/StudentFormModal';
 
 const StudentManagementScreen = () => {
   const navigation = useNavigation();
   const [searchQuery, setSearchQuery] = useState('');
-  const [students, setStudents] = useState(studentData);
+  const [students, setStudents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedStudent, setSelectedStudent] = useState(null);
+
+  const fetchStudents = async () => {
+    setLoading(true);
+    try {
+      const res = await axiosInstance.get('/students'); 
+      setLoading(false);
+      setStudents(res.data);
+    } catch (err) {
+      console.error('Error fetching students:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchStudents();
+  }, []);
 
   const filteredStudents = students.filter(student =>
     student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     student.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const deleteStudent = (id) => {
-    setStudents(students.filter(student => student.id !== id));
+  const deleteStudent = async (id) => {
+    try {
+      await axiosInstance.delete(`/students/${id}`);
+      setStudents(students.filter(student => student.id !== id));
+    } catch (err) {
+      console.error('Error deleting student:', err);
+    }
   };
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#6C5CE7" />
+      </View>
+    );
+  }
 
   return (
     <ScreenWrapper>
@@ -53,46 +76,64 @@ const StudentManagementScreen = () => {
           </View>
           <TouchableOpacity 
             style={styles.addButton}
-            onPress={() => navigation.navigate('AddStudent')}
+            onPress={() => {
+              setSelectedStudent(null);
+              setModalVisible(true);
+            }}
           >
             <AddIcon/>
             <Text style={styles.addButtonText}>Add</Text>
           </TouchableOpacity>
         </View>
         <ScrollView style={styles.cardContainer}>
-          {filteredStudents.map((student) => (
-            <View key={student.id} style={styles.card}>
-              <View style={styles.cardHeader}>
-                <Text style={styles.cardName}>{student.name}</Text>
-                <View style={[
-                  styles.statusBadge, 
-                  student.status === 'Active' ? styles.activeBadge : styles.inactiveBadge
-                ]}>
-                  <Text style={styles.statusText}>{student.status}</Text>
+          {loading ? (
+            <ActivityIndicator size="large" color="#6C5CE7" style={{ marginTop: 40 }} />
+          ) : (
+            filteredStudents.map((student) => (
+              <View key={student.id} style={styles.card}>
+                <View style={styles.cardHeader}>
+                  <Text style={styles.cardName}>{student.name}</Text>
+                  <View style={[
+                    styles.statusBadge,
+                    student.status === 'Active' ? styles.activeBadge : styles.inactiveBadge
+                  ]}>
+                    <Text style={styles.statusText}>{student.status}</Text>
+                  </View>
+                </View>
+                <Text style={styles.cardEmail}>{student.email}</Text>
+                <Text style={styles.cardEmail}>{student.phone}</Text>
+                <View style={styles.cardActions}>
+                  <TouchableOpacity
+                    style={styles.cardButton}
+                    onPress={() => {
+                      setSelectedStudent(student);
+                      setModalVisible(true);
+                    }}
+                  >
+                    <EditIcon size={16} />
+                    <Text style={styles.cardButtonText}>Edit</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.cardButton, { backgroundColor: '#FFEBEE' }]}
+                    onPress={() => deleteStudent(student.id)}
+                  >
+                    <DeleteIcon size={16} color="#FF5252" />
+                    <Text style={[styles.cardButtonText, { color: '#FF5252' }]}>Delete</Text>
+                  </TouchableOpacity>
                 </View>
               </View>
-              <Text style={styles.cardEmail}>{student.email}</Text>
-              <View style={styles.cardActions}>
-                <TouchableOpacity 
-                  style={styles.cardButton}
-                  onPress={() => navigation.navigate('EditStudent', { student })}
-                >
-                  <EditIcon size={16}/>
-                  <Text style={styles.cardButtonText}>Edit</Text>
-                </TouchableOpacity>
-                <TouchableOpacity 
-                  style={[styles.cardButton, { backgroundColor: '#FFEBEE' }]}
-                  onPress={() => deleteStudent(student.id)}
-                >
-                  <DeleteIcon size={16} color="#FF5252"/>
-                  <Text style={[styles.cardButtonText, { color: '#FF5252' }]}>Delete</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          ))}
+            ))
+          )}
         </ScrollView>
       </View>
+      <StudentFormModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        student={selectedStudent}
+        refreshStudents={fetchStudents}
+      />
     </ScreenWrapper>
+    
   );
 };
 
