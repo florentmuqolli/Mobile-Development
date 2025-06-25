@@ -3,8 +3,9 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, ActivityIn
 import { useNavigation } from '@react-navigation/native';
 import axiosInstance from '../../services/axiosInstance';
 import ScreenWrapper from '../../hooks/ScreenWrapper';
-import UserTypeSelectionModal from './UserTypeSelection';
+import UserTypeSelectionModal from './utils/UserTypeSelection';
 import useLogout from "../../hooks/Logout";
+
 
 const AdminDashboard = () => {
   const navigation = useNavigation();
@@ -13,42 +14,67 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(false);
   const handleLogout = useLogout(setLoading);
   const [stats, setStats] = useState(null);
+  const [lastUpdated, setLastUpdated] = useState(null);
+  const [elapsedTime, setElapsedTime] = useState('');
 
   useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const res = await axiosInstance.get('/admin/dashboard-stats');
-        const data = res.data;
-        setStats([
-          {
-            id: '1',
-            title: 'Total Students',
-            value: data.students.total.toString(),
-            change: `+${data.students.new}`,
-            icon: '👨‍🎓',
-          },
-          {
-            id: '2',
-            title: 'Active Courses',
-            value: data.courses.total.toString(),
-            change: `+${data.courses.new}`,
-            icon: '📚',
-          },
-          {
-            id: '3',
-            title: 'Total Professors',
-            value: data.professors.total.toString(),
-            change: `+${data.professors.new}`,
-            icon: '👨‍🏫',
-            alert: data.professors.new === 0,
-          },
-        ]);
-      } catch (err) {
-        console.error('Failed to load dashboard stats:', err);
-      }
-    };
-    fetchStats();
+  if (!lastUpdated) return;
+
+  const interval = setInterval(() => {
+    const secondsAgo = Math.floor((Date.now() - lastUpdated.getTime()) / 1000);
+    if (secondsAgo < 60) {
+      setElapsedTime(`${secondsAgo}s ago`);
+    } else {
+      const minutes = Math.floor(secondsAgo / 60);
+      setElapsedTime(`${minutes}m ago`);
+    }
+  }, 1000); 
+
+  return () => clearInterval(interval); 
+}, [lastUpdated]);
+
+
+  const fetchStats = async () => {
+    setLoading(true);
+    try {
+      const res = await axiosInstance.get('/admin/dashboard-stats');
+      const data = res.data;
+      setStats([
+        {
+          id: '1',
+          title: 'Total Students',
+          value: data.students.total.toString(),
+          change: `+${data.students.new}`,
+          icon: '👨‍🎓',
+        },
+        {
+          id: '2',
+          title: 'Active Courses',
+          value: data.courses.total.toString(),
+          change: `+${data.courses.new}`,
+          icon: '📚',
+        },
+        {
+          id: '3',
+          title: 'Total Professors',
+          value: data.professors.total.toString(),
+          change: `+${data.professors.new}`,
+          icon: '👨‍🏫',
+          alert: data.professors.new === 0,
+        },
+      ]);
+      setLastUpdated(new Date());
+    } catch (err) {
+      console.error('Failed to load dashboard stats:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchStats(); 
   }, []);
+
 
 
   const recentActivities = [
@@ -83,6 +109,15 @@ const AdminDashboard = () => {
           <Text style={styles.logoutText}>Logout</Text>
         </TouchableOpacity>
       </View>
+
+      {elapsedTime && (
+  <Text style={{ color: '#636E72', fontSize: 12, marginBottom: 10 }}>
+    Last updated {elapsedTime}
+  </Text>
+)}
+<TouchableOpacity style={styles.refreshButton} onPress={fetchStats}>
+  <Text style={styles.refreshButtonText}>🔄 Refresh</Text>
+</TouchableOpacity>
 
       <ScrollView 
         horizontal 
@@ -160,7 +195,7 @@ const AdminDashboard = () => {
 
               <TouchableOpacity 
                 style={styles.gridCard}
-                onPress={() => navigation.navigate('AddCourse')}
+                onPress={() => navigation.navigate('CourseManagement')}
               >
                 <View style={[styles.gridIcon, { backgroundColor: '#00B894' }]}>
                   <Text style={styles.gridIconText}>➕</Text>
@@ -424,6 +459,24 @@ const styles = StyleSheet.create({
     color: '#FF7675',
     fontSize: 16,
     fontWeight: '600',
+  },
+  refreshButton: {
+  alignSelf: 'flex-start',
+  marginBottom: 10,
+  backgroundColor: '#6C5CE7',
+  paddingVertical: 6,
+  paddingHorizontal: 14,
+  borderRadius: 8,
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.1,
+  shadowRadius: 4,
+  elevation: 3,
+  },
+  refreshButtonText: {
+    color: '#FFF',
+    fontWeight: '600',
+    fontSize: 14,
   },
 });
 

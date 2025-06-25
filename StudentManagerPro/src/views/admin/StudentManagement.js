@@ -93,6 +93,7 @@ const StudentManagementScreen = () => {
               <View key={student.id} style={styles.card}>
                 <View style={styles.cardHeader}>
                   <Text style={styles.cardName}>{student.name}</Text>
+                  <Text style={styles.cardName}>ID: {student.id}</Text>
                   <View style={[
                     styles.statusBadge,
                     student.status === 'Active' ? styles.activeBadge : styles.inactiveBadge
@@ -100,9 +101,9 @@ const StudentManagementScreen = () => {
                     <Text style={styles.statusText}>{student.status}</Text>
                   </View>
                 </View>
-                <Text style={styles.cardEmail}>{student.email}</Text>
-                <Text style={styles.cardEmail}>{student.password}</Text>
-                <Text style={styles.cardEmail}>{student.phone}</Text>
+                <Text style={styles.cardEmail}>Email : {student.email}</Text>
+                <Text style={styles.cardEmail}>Password: {student.password}</Text>
+                <Text style={styles.cardEmail}>Phone: {student.phone}</Text>
                 <View style={styles.cardActions}>
                   <TouchableOpacity
                     style={styles.cardButton}

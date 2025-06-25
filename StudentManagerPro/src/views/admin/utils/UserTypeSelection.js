@@ -26,7 +26,7 @@ const UserTypeSelectionModal = ({ visible, onClose, navigation }) => {
               navigation.navigate('TeacherManagement');
             }}
           >
-            <Text style={styles.optionText}>Teachers</Text>
+            <Text style={styles.optionText}>Professors</Text>
           </TouchableOpacity>
           
           <TouchableOpacity 

@@ -21,9 +21,9 @@ exports.getClassById = async (req, res) => {
 
 exports.createClass = async (req, res) => {
   try {
-    const { title, description, teacher_id, schedule, room } = req.body;
-    const [result] = await Class.create({ title, description, teacher_id, schedule, room });
-    res.status(201).json({ id: result.insertId, title, description, teacher_id, schedule, room });
+    const { title, description, teacher_id, schedule, room, status } = req.body;
+    const [result] = await Class.create({ title, description, teacher_id, schedule, room, status });
+    res.status(201).json({ id: result.insertId, title, description, teacher_id, schedule, room, status });
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
   }
@@ -31,13 +31,14 @@ exports.createClass = async (req, res) => {
 
 exports.updateClass = async (req, res) => {
   try {
-    const { title, description, teacher_id, schedule, room } = req.body;
+    const { title, description, teacher_id, schedule, room, status } = req.body;
     const [result] = await Class.update(req.params.id, {
       title,
       description,
       teacher_id,
       schedule,
       room,
+      status
     });
     if (result.affectedRows === 0) return res.status(404).json({ message: 'Class not found' });
     res.json({ message: 'Class updated successfully' });

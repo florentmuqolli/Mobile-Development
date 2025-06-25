@@ -1,113 +1,141 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import Icon from 'react-native-vector-icons/MaterialIcons';
+import axiosInstance from '../../services/axiosInstance'; 
+import ScreenWrapper from '../../hooks/ScreenWrapper';
+import { SearchIcon, EditIcon, DeleteIcon, BackArrowIcon, AddIcon } from '../../assets/Icons';
+import  CourseFormModal  from './utils/CourseFormModal';
 
-const AddCourseScreen = () => {
+const CourseManagementScreen = () => {
   const navigation = useNavigation();
-  const [courseData, setCourseData] = useState({
-    title: '',
-    code: '',
-    creditHours: '',
-    instructor: '',
-    schedule: '',
-    description: ''
-  });
+  const [searchQuery, setSearchQuery] = useState('');
+  const [courses, setCourses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedCourse, setSelectedCourse] = useState(null);
 
-  const handleInputChange = (field, value) => {
-    setCourseData(prev => ({ ...prev, [field]: value }));
+  const fetchCourses = async () => {
+    setLoading(true);
+    try {
+      const res = await axiosInstance.get('/class'); 
+      setLoading(false);
+      setCourses(res.data);
+    } catch (err) {
+      console.error('Error fetching courses:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleSubmit = () => {
-    // In real app: axiosInstance.post('/courses', courseData)
-    console.log('Course data:', courseData);
-    navigation.goBack();
+  useEffect(() => {
+    fetchCourses();
+  }, []);
+
+  const filteredCourses = courses.filter(course =>
+    course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    course.description.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const deleteCourse = async (id) => {
+    try {
+      await axiosInstance.delete(`/class/${id}`);
+      setCourses(courses.filter(course => course.id !== id));
+    } catch (err) {
+      console.error('Error deleting course:', err);
+    }
   };
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#6C5CE7" />
+      </View>
+    );
+  }
 
   return (
-    <ScrollView style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Icon name="arrow-back" size={24} color="#6C5CE7" />
-        </TouchableOpacity>
-        <Text style={styles.title}>Add New Course</Text>
-        <View style={{ width: 24 }} /> {/* Spacer */}
+    <ScreenWrapper>
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => navigation.goBack()}>
+            <BackArrowIcon/>
+          </TouchableOpacity>
+          <Text style={styles.title}>Course Management</Text>
+          <View style={{ width: 24 }} />
+        </View>
+        <View style={styles.actionBar}>
+          <View style={styles.searchContainer}>
+            <SearchIcon/>
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search courses..."
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              placeholderTextColor="#999"
+            />
+          </View>
+          <TouchableOpacity 
+            style={styles.addButton}
+            onPress={() => {
+              setSelectedCourse(null);
+              setModalVisible(true);
+            }}
+          >
+            <AddIcon/>
+            <Text style={styles.addButtonText}>Add</Text>
+          </TouchableOpacity>
+        </View>
+        <ScrollView style={styles.cardContainer}>
+          {loading ? (
+            <ActivityIndicator size="large" color="#6C5CE7" style={{ marginTop: 40 }} />
+          ) : (
+            filteredCourses.map((course) => (
+              <View key={course.id} style={styles.card}>
+                <View style={styles.cardHeader}>
+                  <Text style={styles.cardName}>{course.title}</Text>
+                  <View style={[
+                    styles.statusBadge,
+                    course.status === 'Active' ? styles.activeBadge : styles.inactiveBadge
+                  ]}>
+                    <Text style={styles.statusText}>{course.status}</Text>
+                  </View>
+                </View>
+                <Text style={styles.cardEmail}>{course.description}</Text>
+                <Text style={styles.cardEmail}>{course.teacher_id}</Text>
+                <Text style={styles.cardEmail}>{course.schedule}</Text>
+                <Text style={styles.cardEmail}>{course.room}</Text>
+                <View style={styles.cardActions}>
+                  <TouchableOpacity
+                    style={styles.cardButton}
+                    onPress={() => {
+                      setSelectedCourse(course);
+                      setModalVisible(true);
+                    }}
+                  >
+                    <EditIcon size={16} />
+                    <Text style={styles.cardButtonText}>Edit</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.cardButton, { backgroundColor: '#FFEBEE' }]}
+                    onPress={() => deleteCourse(course.id)}
+                  >
+                    <DeleteIcon size={16} color="#FF5252" />
+                    <Text style={[styles.cardButtonText, { color: '#FF5252' }]}>Delete</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            ))
+          )}
+        </ScrollView>
       </View>
-
-      {/* Form */}
-      <View style={styles.formContainer}>
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Course Title*</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Introduction to Computer Science"
-            value={courseData.title}
-            onChangeText={(text) => handleInputChange('title', text)}
-          />
-        </View>
-
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Course Code*</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="CS101"
-            value={courseData.code}
-            onChangeText={(text) => handleInputChange('code', text)}
-          />
-        </View>
-
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Credit Hours*</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="3"
-            keyboardType="numeric"
-            value={courseData.creditHours}
-            onChangeText={(text) => handleInputChange('creditHours', text)}
-          />
-        </View>
-
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Instructor*</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Dr. Smith"
-            value={courseData.instructor}
-            onChangeText={(text) => handleInputChange('instructor', text)}
-          />
-        </View>
-
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Schedule*</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Mon/Wed 10:00-11:30"
-            value={courseData.schedule}
-            onChangeText={(text) => handleInputChange('schedule', text)}
-          />
-        </View>
-
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Description</Text>
-          <TextInput
-            style={[styles.input, { height: 100, textAlignVertical: 'top' }]}
-            placeholder="Course objectives and topics..."
-            multiline
-            value={courseData.description}
-            onChangeText={(text) => handleInputChange('description', text)}
-          />
-        </View>
-
-        <TouchableOpacity 
-          style={styles.submitButton}
-          onPress={handleSubmit}
-          disabled={!courseData.title || !courseData.code || !courseData.creditHours || !courseData.instructor || !courseData.schedule}
-        >
-          <Text style={styles.submitButtonText}>Create Course</Text>
-        </TouchableOpacity>
-      </View>
-    </ScrollView>
+      <CourseFormModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        course={selectedCourse}
+        refreshCourses={fetchCourses}
+      />
+    </ScreenWrapper>
+    
   );
 };
 
@@ -124,51 +152,113 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   title: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#2D3436',
   },
-  formContainer: {
+  actionBar: {
+    flexDirection: 'row',
+    marginBottom: 16,
+  },
+  searchContainer: {
+    flex: 1,
+    flexDirection: 'row',
     backgroundColor: '#FFF',
-    borderRadius: 12,
-    padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 3,
-  },
-  inputGroup: {
-    marginBottom: 20,
-  },
-  label: {
-    fontSize: 14,
-    color: '#2D3436',
-    marginBottom: 8,
-    fontWeight: '600',
-  },
-  input: {
-    backgroundColor: '#F8F9FA',
+    borderRadius: 10,
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    marginRight: 10,
     borderWidth: 1,
     borderColor: '#DFE6E9',
-    borderRadius: 10,
-    padding: 15,
-    fontSize: 16,
-    color: '#2D3436',
+    alignItems: 'center',
   },
-  submitButton: {
+  searchInput: {
+    flex: 1,
+    color: '#2D3436',
+    fontSize: 14,
+    marginLeft: 8,
+  },
+  addButton: {
+    flexDirection: 'row',
     backgroundColor: '#6C5CE7',
     borderRadius: 10,
-    padding: 18,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 10,
+    minWidth: 80,
   },
-  submitButtonText: {
+  addButtonText: {
     color: '#FFF',
+    fontSize: 14,
+    fontWeight: '600',
+    marginLeft: 6,
+  },
+  cardContainer: {
+    flex: 1,
+    padding: 8,
+  },
+  card: {
+    backgroundColor: '#FFF',
+    borderRadius: 10,
+    padding: 15,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  cardName: {
     fontSize: 16,
+    fontWeight: '600',
+    color: '#2D3436',
+    flex: 1,
+  },
+  cardEmail: {
+    fontSize: 14,
+    color: '#636E72',
+    marginBottom: 12,
+  },
+  cardActions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+  },
+  cardButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#EDE7F6',
+    borderRadius: 8,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    marginLeft: 10,
+  },
+  cardButtonText: {
+    fontSize: 14,
+    color: '#6C5CE7',
+    marginLeft: 6,
+    fontWeight: '500',
+  },
+  statusBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    borderRadius: 10,
+  },
+  activeBadge: {
+    backgroundColor: '#E3F9E5',
+  },
+  inactiveBadge: {
+    backgroundColor: '#FFEBEE',
+  },
+  statusText: {
+    fontSize: 12,
     fontWeight: '600',
   },
 });
 
-export default AddCourseScreen;
+export default CourseManagementScreen;

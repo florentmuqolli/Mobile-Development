@@ -93,6 +93,7 @@ const TeacherManagementScreen = () => {
               <View key={teacher.id} style={styles.card}>
                 <View style={styles.cardHeader}>
                   <Text style={styles.cardName}>{teacher.name}</Text>
+                  <Text style={styles.cardName}>ID: {teacher.id}</Text>
                   <View style={[
                     styles.statusBadge,
                     teacher.status === 'Active' ? styles.activeBadge : styles.inactiveBadge
@@ -100,9 +101,9 @@ const TeacherManagementScreen = () => {
                     <Text style={styles.statusText}>{teacher.status}</Text>
                   </View>
                 </View>
-                <Text style={styles.cardEmail}>{teacher.email}</Text>
-                <Text style={styles.cardEmail}>{teacher.password}</Text>
-                <Text style={styles.cardEmail}>{teacher.phone}</Text>
+                <Text style={styles.cardEmail}>Email: {teacher.email}</Text>
+                <Text style={styles.cardEmail}>Password: {teacher.password}</Text>
+                <Text style={styles.cardEmail}>Phone: {teacher.phone}</Text>
                 <View style={styles.cardActions}>
                   <TouchableOpacity
                     style={styles.cardButton}
