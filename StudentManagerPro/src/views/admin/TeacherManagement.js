@@ -1,35 +1,57 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import axiosInstance from '../../services/axiosInstance'; 
 import ScreenWrapper from '../../hooks/ScreenWrapper';
-import { 
-  SearchIcon, 
-  EditIcon,
-  DeleteIcon,
-  BackArrowIcon,
-  AddIcon
-} from '../../assets/Icons';
-
-const teacherData = [
-  { id: '1', name: 'Dr. Smith', email: 'smith@uni.edu', subjects: 'Math, Physics', status: 'Active' },
-  { id: '2', name: 'Prof. Johnson', email: 'johnson@uni.edu', subjects: 'English', status: 'Active' },
-  { id: '3', name: 'Dr. Lee', email: 'lee@uni.edu', subjects: 'Biology', status: 'On Leave' },
-];
+import { SearchIcon, EditIcon, DeleteIcon, BackArrowIcon, AddIcon } from '../../assets/Icons';
+import  TeacherFormModal  from './utils//TeacherFormModal';
 
 const TeacherManagementScreen = () => {
   const navigation = useNavigation();
   const [searchQuery, setSearchQuery] = useState('');
-  const [teachers, setTeachers] = useState(teacherData);
+  const [teachers, setTeachers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedTeacher, setSelectedTeacher] = useState(null);
+
+  const fetchTeachers = async () => {
+    setLoading(true);
+    try {
+      const res = await axiosInstance.get('/teachers'); 
+      setLoading(false);
+      setTeachers(res.data);
+    } catch (err) {
+      console.error('Error fetching teachers:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTeachers();
+  }, []);
 
   const filteredTeachers = teachers.filter(teacher =>
     teacher.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    teacher.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    teacher.subjects.toLowerCase().includes(searchQuery.toLowerCase())
+    teacher.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const deleteTeacher = (id) => {
-    setTeachers(teachers.filter(teacher => teacher.id !== id));
+  const deleteTeacher = async (id) => {
+    try {
+      await axiosInstance.delete(`/teachers/${id}`);
+      setTeachers(teachers.filter(teacher => teacher.id !== id));
+    } catch (err) {
+      console.error('Error deleting teacher:', err);
+    }
   };
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#6C5CE7" />
+      </View>
+    );
+  }
 
   return (
     <ScreenWrapper>
@@ -39,7 +61,7 @@ const TeacherManagementScreen = () => {
             <BackArrowIcon/>
           </TouchableOpacity>
           <Text style={styles.title}>Teacher Management</Text>
-          <View style={{ width: 24 }} /> 
+          <View style={{ width: 24 }} />
         </View>
         <View style={styles.actionBar}>
           <View style={styles.searchContainer}>
@@ -54,47 +76,64 @@ const TeacherManagementScreen = () => {
           </View>
           <TouchableOpacity 
             style={styles.addButton}
-            onPress={() => navigation.navigate('AddTeacher')}
+            onPress={() => {
+              setSelectedTeacher(null);
+              setModalVisible(true);
+            }}
           >
             <AddIcon/>
             <Text style={styles.addButtonText}>Add</Text>
           </TouchableOpacity>
         </View>
         <ScrollView style={styles.cardContainer}>
-          {filteredTeachers.map((teacher) => (
-            <View key={teacher.id} style={styles.card}>
-              <View style={styles.cardHeader}>
-                <Text style={styles.cardName}>{teacher.name}</Text>
-                <View style={[
-                  styles.statusBadge, 
-                  teacher.status === 'Active' ? styles.activeBadge : styles.inactiveBadge
-                ]}>
-                  <Text style={styles.statusText}>{teacher.status}</Text>
+          {loading ? (
+            <ActivityIndicator size="large" color="#6C5CE7" style={{ marginTop: 40 }} />
+          ) : (
+            filteredTeachers.map((teacher) => (
+              <View key={teacher.id} style={styles.card}>
+                <View style={styles.cardHeader}>
+                  <Text style={styles.cardName}>{teacher.name}</Text>
+                  <View style={[
+                    styles.statusBadge,
+                    teacher.status === 'Active' ? styles.activeBadge : styles.inactiveBadge
+                  ]}>
+                    <Text style={styles.statusText}>{teacher.status}</Text>
+                  </View>
+                </View>
+                <Text style={styles.cardEmail}>{teacher.email}</Text>
+                <Text style={styles.cardEmail}>{teacher.phone}</Text>
+                <View style={styles.cardActions}>
+                  <TouchableOpacity
+                    style={styles.cardButton}
+                    onPress={() => {
+                      setSelectedTeacher(teacher);
+                      setModalVisible(true);
+                    }}
+                  >
+                    <EditIcon size={16} />
+                    <Text style={styles.cardButtonText}>Edit</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.cardButton, { backgroundColor: '#FFEBEE' }]}
+                    onPress={() => deleteTeacher(teacher.id)}
+                  >
+                    <DeleteIcon size={16} color="#FF5252" />
+                    <Text style={[styles.cardButtonText, { color: '#FF5252' }]}>Delete</Text>
+                  </TouchableOpacity>
                 </View>
               </View>
-              <Text style={styles.cardEmail}>{teacher.email}</Text>
-              <Text style={styles.cardSubjects}>Subjects: {teacher.subjects}</Text>
-              <View style={styles.cardActions}>
-                <TouchableOpacity 
-                  style={styles.cardButton}
-                  onPress={() => navigation.navigate('EditTeacher', { teacher })}
-                >
-                  <EditIcon size={16}/>
-                  <Text style={styles.cardButtonText}>Edit</Text>
-                </TouchableOpacity>
-                <TouchableOpacity 
-                  style={[styles.cardButton, { backgroundColor: '#FFEBEE' }]}
-                  onPress={() => deleteTeacher(teacher.id)}
-                >
-                  <DeleteIcon size={16} color="#FF5252"/>
-                  <Text style={[styles.cardButtonText, { color: '#FF5252' }]}>Delete</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          ))}
+            ))
+          )}
         </ScrollView>
       </View>
+      <TeacherFormModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        teacher={selectedTeacher}
+        refreshTeachers={fetchTeachers}
+      />
     </ScreenWrapper>
+    
   );
 };
 
@@ -182,11 +221,6 @@ const styles = StyleSheet.create({
   cardEmail: {
     fontSize: 14,
     color: '#636E72',
-    marginBottom: 4,
-  },
-  cardSubjects: {
-    fontSize: 14,
-    color: '#2D3436',
     marginBottom: 12,
   },
   cardActions: {

@@ -21,9 +21,9 @@ exports.getTeacherById = async (req, res) => {
 
 exports.createTeacher = async (req, res) => {
   try {
-    const { name, email, phone, specialty, experience } = req.body;
+    const { name, email, phone, department, status } = req.body;
 
-    if (!name || !email || !phone || !specialty || !experience) {
+    if (!name || !email || !phone || !department || !status) {
       return res.status(400).json({ 
         message: "All fields are required" 
       });
@@ -53,7 +53,8 @@ exports.createTeacher = async (req, res) => {
       name, 
       email, 
       phone, 
-      department
+      department,
+      status
     });
 
     res.status(201).json({ 
@@ -61,7 +62,8 @@ exports.createTeacher = async (req, res) => {
       name, 
       email, 
       phone, 
-      department
+      department,
+      status
     });
 
   } catch (error) {
@@ -81,16 +83,17 @@ exports.createTeacher = async (req, res) => {
 
 exports.updateTeacher = async (req, res) => {
   try {
-    const { name, email, phone, specialty, experience } = req.body;
+    const { name, email, phone, department, status } = req.body;
     
-    if (!name || !email || !phone || !specialty || !experience) {
+    if (!name || !email || !phone || !department || !status) {
       return res.status(400).json({ message: 'All fields are required' });
     }
     const [result] = await Teacher.update(req.params.id, { 
       name, 
       email, 
       phone, 
-      department
+      department,
+      status
     });
     
     if (result.affectedRows === 0) {
