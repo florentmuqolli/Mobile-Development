@@ -7,6 +7,7 @@ const TeacherFormModal = ({ visible, onClose, teacher, refreshTeachers }) => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    password: '',
     phone: '',
     department: '',
     status: ''
@@ -19,6 +20,7 @@ const TeacherFormModal = ({ visible, onClose, teacher, refreshTeachers }) => {
       setFormData({
         name: teacher.name || '',
         email: teacher.email || '',
+        password: teacher.password || '',
         phone: teacher.phone || '',
         department: teacher.department || '',
         status: teacher.status || 'Active'
@@ -27,6 +29,7 @@ const TeacherFormModal = ({ visible, onClose, teacher, refreshTeachers }) => {
       setFormData({
         name: '',
         email: '',
+        password: '',
         phone: '',
         department: '',
         status: 'Active'
@@ -121,6 +124,17 @@ const TeacherFormModal = ({ visible, onClose, teacher, refreshTeachers }) => {
               onChangeText={(text) => setFormData({...formData, email: text})}
             />
             {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Password*</Text>
+            <TextInput
+              style={[styles.input, errors.password && styles.inputError]}
+              placeholder="strong password"
+              value={formData.password}
+              onChangeText={(text) => setFormData({...formData, password: text})}
+            />
+            {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
           </View>
 
           <View style={styles.inputGroup}>

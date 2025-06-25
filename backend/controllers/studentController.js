@@ -21,10 +21,10 @@ exports.getStudentById = async (req, res) => {
 
 exports.createStudent = async (req, res) => {
   try {
-    const { name, email, phone, address, status } = req.body;
+    const { name, email, phone, address, status, password } = req.body;
     console.log("body: ",req.body);
-    const [result] = await Student.create({ name, email, phone, address, status });
-    res.status(201).json({ id: result.insertId, name, email, phone, address, status });
+    const [result] = await Student.create({ name, email, phone, address, status, password });
+    res.status(201).json({ id: result.insertId, name, email, phone, address, status, password });
   } catch (error) {
     console.error("Create Student error:", error);
     res.status(500).json({ message: 'Server error' });
@@ -33,8 +33,8 @@ exports.createStudent = async (req, res) => {
 
 exports.updateStudent = async (req, res) => {
   try {
-    const { name, email, phone, address } = req.body;
-    const [result] = await Student.update(req.params.id, { name, email, phone, address });
+    const { name, email, phone, address, status, password } = req.body;
+    const [result] = await Student.update(req.params.id, { name, email, phone, address, status, password });
     if (result.affectedRows === 0) return res.status(404).json({ message: 'Student not found' });
     res.json({ message: 'Student updated successfully' });
   } catch (error) {

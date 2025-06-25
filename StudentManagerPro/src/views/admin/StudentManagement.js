@@ -101,6 +101,7 @@ const StudentManagementScreen = () => {
                   </View>
                 </View>
                 <Text style={styles.cardEmail}>{student.email}</Text>
+                <Text style={styles.cardEmail}>{student.password}</Text>
                 <Text style={styles.cardEmail}>{student.phone}</Text>
                 <View style={styles.cardActions}>
                   <TouchableOpacity

@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import axiosInstance from '../../services/axiosInstance';
 import ScreenWrapper from '../../hooks/ScreenWrapper';
 import UserTypeSelectionModal from './UserTypeSelection';
 import useLogout from "../../hooks/Logout";
@@ -11,13 +12,44 @@ const AdminDashboard = () => {
   const [showUserModal, setShowUserModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const handleLogout = useLogout(setLoading);
+  const [stats, setStats] = useState(null);
 
-  const stats = [
-    { id: '1', title: 'Total Students', value: '1,248', change: '+12%', icon: '👨‍🎓' },
-    { id: '2', title: 'Active Courses', value: '24', change: '+3', icon: '📚' },
-    { id: '3', title: 'Pending Requests', value: '18', alert: true, icon: '⏳' },
-    { id: '4', title: 'Revenue', value: '$8,420', change: '+5.2%', icon: '💰' },
-  ];
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const res = await axiosInstance.get('/admin/dashboard-stats');
+        const data = res.data;
+        setStats([
+          {
+            id: '1',
+            title: 'Total Students',
+            value: data.students.total.toString(),
+            change: `+${data.students.new}`,
+            icon: '👨‍🎓',
+          },
+          {
+            id: '2',
+            title: 'Active Courses',
+            value: data.courses.total.toString(),
+            change: `+${data.courses.new}`,
+            icon: '📚',
+          },
+          {
+            id: '3',
+            title: 'Total Professors',
+            value: data.professors.total.toString(),
+            change: `+${data.professors.new}`,
+            icon: '👨‍🏫',
+            alert: data.professors.new === 0,
+          },
+        ]);
+      } catch (err) {
+        console.error('Failed to load dashboard stats:', err);
+      }
+    };
+    fetchStats();
+  }, []);
+
 
   const recentActivities = [
     { id: '1', user: 'Alex Johnson', action: 'added new course', time: '2 mins ago', icon: '➕' },
@@ -57,7 +89,7 @@ const AdminDashboard = () => {
         showsHorizontalScrollIndicator={false}
         style={styles.statsContainer}
       >
-        {stats.map(item => (
+        {stats ? stats.map(item => (
           <View key={item.id} style={[
             styles.statCard,
             item.alert && styles.alertCard
@@ -67,13 +99,15 @@ const AdminDashboard = () => {
             <Text style={styles.statTitle}>{item.title}</Text>
             {item.change && (
               <View style={styles.changeBadge}>
-                <Text style={styles.changeText}>{item.change}</Text>
+              <Text style={styles.changeText}>{item.change}</Text>
               </View>
             )}
           </View>
-        ))}
-      </ScrollView>
+        )) : (
+          <ActivityIndicator size="small" color="#6C5CE7" />
+        )}
 
+      </ScrollView>
       <View style={styles.tabContainer}>
         <TouchableOpacity 
           style={[styles.tab, activeTab === 'overview' && styles.activeTab]}

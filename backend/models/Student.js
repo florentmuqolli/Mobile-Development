@@ -2,14 +2,16 @@ const db = require('../config/db');
 
 const Student = {
   getAll: () => db.query('SELECT * FROM students'),
+  getCount: () => db.query('SELECT COUNT(*) AS count FROM students'),
+  getCountSince: (date) => db.query('SELECT COUNT(*) AS count FROM students WHERE created_at >= ?', [date]),
   getById: (id) => db.query('SELECT * FROM students WHERE id = ?', [id]),
   create: (data) => db.query(
-    'INSERT INTO students (name, email, phone, address, status) VALUES (?, ?, ?, ?, ?)', 
-    [data.name, data.email, data.phone, data.address, data.status || 'Active' ]
+    'INSERT INTO students (name, email, phone, address, status, password) VALUES (?, ?, ?, ?, ?, ?)', 
+    [data.name, data.email, data.phone, data.address, data.status || 'Active', data.password ]
   ),
   update: (id, data) => db.query(
-    'UPDATE students SET name = ?, email = ?, phone = ?, address = ?, status = ? WHERE id = ?',
-    [data.name, data.email, data.phone, data.address, data.status, id]
+    'UPDATE students SET name = ?, email = ?, phone = ?, address = ?, status = ?, password = ? WHERE id = ?',
+    [data.name, data.email, data.phone, data.address, data.status, data.password, id]
   ),
   delete: (id) => db.query('DELETE FROM students WHERE id = ?', [id]),
 };
