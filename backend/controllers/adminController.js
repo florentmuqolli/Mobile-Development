@@ -1,6 +1,18 @@
 const Student = require('../models/Student');
 const Class = require('../models/Class');
 const Teacher = require('../models/Teacher');
+const ActivityLog = require('../models/ActivityLog');
+
+exports.getRecentActivities = async (req, res) => {
+  try {
+    const [activityLogs] = await ActivityLog.getRecent();
+
+    res.json (activityLogs);
+  } catch (error) {
+      console.error('Dashboard Error:', error);
+      res.status(500).json({ message: 'Failed to load dashboard data' });
+  }
+};
 
 exports.getDashboardStats = async (req, res) => {
   try {
@@ -25,7 +37,7 @@ exports.getDashboardStats = async (req, res) => {
       professors: {
         total: professorCount[0].count,
         new: newProfessors[0].count,
-      }
+      },
     });
   } catch (error) {
     console.error('Dashboard Error:', error);

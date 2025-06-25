@@ -1,4 +1,5 @@
 const Teacher = require('../models/Teacher');
+const ActivityLog = require('../models/ActivityLog');
 
 exports.getAllTeachers = async (req, res) => {
   try {
@@ -58,6 +59,8 @@ exports.createTeacher = async (req, res) => {
       password
     });
 
+    await ActivityLog.create(req.user.name, 'added a new teacher', '👨‍🏫');
+
     res.status(201).json({ 
       id: result.insertId, 
       name, 
@@ -103,6 +106,7 @@ exports.updateTeacher = async (req, res) => {
       return res.status(404).json({ message: 'Teacher not found' });
     }
     const [teacher] = await Teacher.findById(req.params.id);
+    await ActivityLog.create(req.user.name, 'updated a teacher', '👨‍🏫');
     res.json({ 
       message: 'Teacher updated successfully',
       teacher: teacher[0]
@@ -119,6 +123,7 @@ exports.deleteTeacher = async (req, res) => {
   try {
     const [result] = await Teacher.delete(req.params.id);
     if (result.affectedRows === 0) return res.status(404).json({ message: 'Teacher not found' });
+    await ActivityLog.create(req.user.name, 'deleted a teacher', '👨‍🏫');
     res.json({ message: 'Teacher deleted successfully' });
   } catch (error) {
     res.status(500).json({ message: 'Server error' });

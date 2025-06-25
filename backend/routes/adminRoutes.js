@@ -4,5 +4,6 @@ const AdminController = require('../controllers/adminController');
 const { authenticateToken, authorizeRoles } = require('../middleware/auth');
 
 router.get('/dashboard-stats',authenticateToken, authorizeRoles('admin'), AdminController.getDashboardStats);
+router.get('/recent-activities', authenticateToken, authorizeRoles('admin'), AdminController.getRecentActivities);
 
 module.exports = router;

@@ -4,7 +4,7 @@ const crypto = require('crypto');
 const sendEmail = require('../utils/sendEmail');
 
 const generateToken = (user, secret, expiresIn) => {
-  return jwt.sign({ id: user._id, role: user.role }, secret, { expiresIn });
+  return jwt.sign({ id: user._id, name: user.name, role: user.role }, secret, { expiresIn });
 };
 
 exports.register = async (req, res) => {

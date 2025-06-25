@@ -374,3 +374,38 @@ export const AddIcon = () => (
     />
   </Svg>
 );
+
+export const RefreshIcon = () => (
+  <Svg width={24} height={24} viewBox="0 0 24 24" fill="none">
+    <Path
+      d="M17.65 6.35C16.2 4.9 14.21 4 12 4C7.58 4 4 7.58 4 12C4 16.42 7.58 20 12 20C15.73 20 18.84 17.45 19.73 14H17.65C16.83 16.33 14.61 18 12 18C8.69 18 6 15.31 6 12C6 8.69 8.69 6 12 6C13.66 6 15.14 6.69 16.22 7.78L13 11H20V4L17.65 6.35Z"
+      fill="#FFFFFF"
+    />
+  </Svg>
+);
+
+export const LogoutIcon = () => (
+  <Svg width={24} height={24} viewBox="0 0 24 24" fill="none">
+    <Path
+      d="M16 17L21 12L16 7"
+      stroke="#FF7675"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <Path
+      d="M21 12H9"
+      stroke="#FF7675"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <Path
+      d="M13 5V4C13 3.46957 12.7893 2.96086 12.4142 2.58579C12.0391 2.21071 11.5304 2 11 2H5C4.46957 2 3.96086 2.21071 3.58579 2.58579C3.21071 2.96086 3 3.46957 3 4V20C3 20.5304 3.21071 21.0391 3.58579 21.4142C3.96086 21.7893 4.46957 22 5 22H11C11.5304 22 12.0391 21.7893 12.4142 21.4142C12.7893 21.0391 13 20.5304 13 20V19"
+      stroke="#FF7675"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </Svg>
+);
