@@ -37,6 +37,7 @@ const ForgotPasswordScreen = () => {
 
     try {
       const response = await axiosInstance.post('/auth/forgot-password', { email });
+      setLoading(false);
       Toast.show({ type: 'success', text1: response.data.message || 'Reset code sent to your email' });
       setVerificationModalVisible(true);
     } catch (error) {
@@ -106,12 +107,32 @@ const ForgotPasswordScreen = () => {
     }
   };
 
+  const handleNavigate = () => {
+    navigation.navigate('Login');
+  }
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#6C5CE7" />
+      </View>
+    );
+  }
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       style={styles.container}
     >
       <View style={styles.content}>
+        <TouchableOpacity 
+          style={styles.goBackButton}
+          onPress={() => setVerificationModalVisible(false)}
+        >
+          <Text style={styles.goBackText}>
+            <Text onPress={handleNavigate}>Go Back</Text>
+          </Text>
+        </TouchableOpacity>
         <Text style={styles.title}>Forgot Password</Text>
         <Text style={styles.instructions}>
           Enter your email address below and we'll send you a 6-digit code to reset your password.
@@ -260,6 +281,7 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   title: {
+    paddingTop: 25,
     fontSize: 26,
     fontWeight: '700',
     marginBottom: 16,
@@ -338,6 +360,20 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     fontSize: 15,
   },
+  goBackButton: {
+  position: 'absolute',
+  top: 10,
+  left: 10,
+  zIndex: 1,
+  flexDirection: 'row',
+  alignItems: 'center',
+},
+goBackText: {
+  color: '#6C5CE7',
+  fontSize: 16,
+  fontWeight: '600',
+  marginLeft: 4,
+},
 });
 
 export default ForgotPasswordScreen;

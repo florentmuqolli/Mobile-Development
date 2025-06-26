@@ -282,7 +282,7 @@ const AdminDashboard = () => {
                     </TouchableOpacity>
                   ))}
                 </View>
-              </>
+                </>
           )}
 
           {activeTab === 'reports' && (
@@ -354,6 +354,7 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     borderWidth: 2,
     borderColor: '#6C5CE7',
+    backgroundColor: '#fff',
     zIndex: 2, 
   },
   statusBar: {

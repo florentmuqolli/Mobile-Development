@@ -101,7 +101,7 @@ const Login = () => {
       >
         <View style={styles.header}>
           <Image 
-            source={require('../assets/logo.png')} 
+            source={require('../assets/logo2.png')} 
             style={styles.logo}
           />
           <Text style={styles.welcomeText}>Welcome back!</Text>
