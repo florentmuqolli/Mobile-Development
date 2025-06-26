@@ -23,7 +23,8 @@ const TeacherFormModal = ({ visible, onClose, teacher, refreshTeachers }) => {
         password: teacher.password || '',
         phone: teacher.phone || '',
         department: teacher.department || '',
-        status: teacher.status || 'Active'
+        status: teacher.status || 'Active',
+        user_id: teacher.user_id || '',
       });
     } else {
       setFormData({

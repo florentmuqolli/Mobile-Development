@@ -1,4 +1,6 @@
 const User = require('../models/User');
+const PendingUser = require('../models/PendingUser');
+const ActivityLog = require('../models/ActivityLog');
 const Student = require('../models/Student');
 const Teacher = require('../models/Teacher');
 const jwt = require('jsonwebtoken');
@@ -10,28 +12,84 @@ const generateToken = (user, secret, expiresIn) => {
 };
 
 exports.register = async (req, res) => {
-  const { name, email, password, role } = req.body;
+  const { name, email, password, role, ...rest } = req.body;
+
   try {
     let user = await User.findOne({ email });
     if (user) return res.status(400).json({ message: 'User already exists' });
 
     user = new User({ name, email, password, role });
-    await user.save();
+    await user.save(); 
 
-    res.status(201).json({
-      message: 'User registered successfully',
-    });
+    const commonFields = { name, email, user_id: user._id.toString(), status: 'Active', ...rest };
+
+    if (role === 'student') {
+      await Student.create(commonFields);
+    } else if (role === 'teacher') {
+      await Teacher.create(commonFields);
+    }
+
+    res.status(201).json({ message: 'User registered successfully' });
   } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error during registration' });
+  }
+};
+
+
+exports.requestRegister = async (req, res) => {
+  const { name, email, password, role } = req.body;
+
+  try {
+    const existing = await PendingUser.findOne({ email });
+    if (existing) {
+      return res.status(400).json({ message: 'A request for this email already exists' });
+    }
+
+    const pending = new PendingUser({
+      name,
+      email,
+      password,
+      role,
+      status: 'pending'
+    });
+
+    await pending.save();
+
+    await ActivityLog.create(pending.name, 'requested to register as a user', '⚠️');
+
+    res.status(200).json({ message: 'Registration request submitted for admin approval' });
+  } catch (error) {
+    console.error('Register request failed:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
 
+exports.checkRequestStatus = async (req, res) => {
+  const { email } = req.query;
+  const request = await PendingUser.findOne({ email });
+  if (!request) {
+    return res.status(404).json({ message: 'Request not found' });
+  }
+  res.json({ status: request.status });
+};
+
 exports.login = async (req, res) => {
   const { email, password } = req.body;
+
   try {
+
+    const pendingUser = await PendingUser.findOne({ email });
+      if (pendingUser && pendingUser.status !== 'approved') {
+        return res.status(403).json({
+          message:
+            pendingUser.status === 'denied'
+              ? 'Your registration was denied by the admin.'
+              : 'Your registration is still pending approval.',
+        });
+      }
+
     const user = await User.findOne({ email });
-    const student = await Student.getByEmail({email});
-    const teacher = await Teacher.findByEmail({email});
     if (!user) return res.status(400).json({ message: 'User not found' });
 
     const isMatch = await user.matchPassword(password);
@@ -42,18 +100,21 @@ exports.login = async (req, res) => {
 
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
-      secure: false, 
-      sameSite: 'lax', 
+      secure: false,
+      sameSite: 'lax',
       path: '/api/auth/refresh-token',
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
-
 
     res.json({
       user: { id: user._id, name: user.name, email: user.email, role: user.role },
       accessToken,
     });
+
+    await ActivityLog.create(user.name, 'logged in', '🔓');
+
   } catch (error) {
+    console.error('Login request failed:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -213,6 +274,8 @@ exports.resetPassword = async (req, res) => {
     user.resetPasswordExpire = undefined;
 
     await user.save();
+
+    await ActivityLog.create(req.user.name, 'reset account password', '🛠️');
 
     res.status(200).json({ message: 'Password updated successfully' });
   } catch (err) {

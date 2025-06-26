@@ -4,6 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import axiosInstance from '../../services/axiosInstance'; 
 import ScreenWrapper from '../../hooks/ScreenWrapper';
 import { SearchIcon, EditIcon, DeleteIcon, BackArrowIcon, AddIcon } from '../../assets/Icons';
+import Toast from 'react-native-toast-message';
 import  TeacherFormModal  from './utils//TeacherFormModal';
 
 const TeacherManagementScreen = () => {
@@ -39,6 +40,10 @@ const TeacherManagementScreen = () => {
   const deleteTeacher = async (id) => {
     try {
       await axiosInstance.delete(`/teachers/${id}`);
+      Toast.show({
+        type: "success",
+        text1: "Teacher Deleted",
+      });
       setTeachers(teachers.filter(teacher => teacher.id !== id));
     } catch (err) {
       console.error('Error deleting teacher:', err);

@@ -8,6 +8,7 @@ import {
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
+  Modal,
   Image,
   SafeAreaView
 } from "react-native";
@@ -21,6 +22,10 @@ const Login = () => {
   const [form, setForm] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const navigation = useNavigation();
+  const [showStatusModal, setShowStatusModal] = useState(false);
+  const [queryEmail, setQueryEmail] = useState('');
+  const [statusMessage, setStatusMessage] = useState('');
+  const [checking, setChecking] = useState(false);
 
   useEffect(() => {
     async function checkToken() {
@@ -28,7 +33,7 @@ const Login = () => {
       const role = await AsyncStorage.getItem("role");
 
       if (token && role === "admin") {
-        navigation.replace("Dashboard");
+        navigation.replace("AdminDashboard");
       } else if (token && role === "teacher") {
         navigation.replace("TeacherHome");
       }
@@ -65,24 +70,64 @@ const Login = () => {
         if (response.data.user.role === "admin") {
           navigation.replace("AdminDashboard");
         } else if (response.data.user.role === "teacher") {
-          navigation.replace("TeacherHome");
+          navigation.replace("StudentHome");
         } else {
           navigation.replace("StudentHome");
         }
       }, 1000);
     } catch (error) {
       setLoading(false);
-      const message =
-        error.response?.data?.message || 
-        error.message || "Something went wrong";
+      const status = error.response?.status;
+      const message = error.response?.data?.message || "Something went wrong";
 
-      Toast.show({
-        type: "error",
-        text1: "Login Failed",
-        text2: message,
-      });
+      if (status === 403 && message.includes("pending")) {
+        Toast.show({
+          type: "info",
+          text1: "Account Pending",
+          text2: message,
+        });
+      } else if (status === 403 && message.includes("denied")) {
+        Toast.show({
+          type: "error",
+          text1: "Registration Denied",
+          text2: message,
+        });
+      } else {
+        Toast.show({
+          type: "error",
+          text1: "Login Failed",
+          text2: message,
+        });
+      }
     }
   };
+
+  const checkRequestStatus = async () => {
+    if (!queryEmail.includes('@')) {
+      setStatusMessage('Please enter a valid email');
+    return;
+    }
+
+    setChecking(true);
+    setStatusMessage('');
+    try {
+      const res = await axiosInstance.get(`/auth/check-request-status?email=${queryEmail}`);
+      const { status } = res.data;
+        if (status === 'approved') {
+          setStatusMessage('✅ Approved — You can now log in.');
+        } else if (status === 'pending') {
+          setStatusMessage('⏳ Pending — Please wait for admin approval.');
+        } else if (status === 'denied') {
+          setStatusMessage('❌ Denied — Your registration was denied.');
+        } else {
+          setStatusMessage('⚠️ Unknown status.');
+        }
+    } catch (err) {
+        setStatusMessage('No registration requests found with this email.');
+      } finally {
+          setChecking(false);
+        }
+  }
 
   if (loading) {
     return (
@@ -161,13 +206,53 @@ const Login = () => {
             <View style={styles.dividerLine} />
           </View>
 
-          <TouchableOpacity style={styles.socialButton}>
-            <Image 
-              source={require('../assets/google-icon.png')} 
-              style={styles.socialIcon}
-            />
-            <Text style={styles.socialButtonText}>Continue with Google</Text>
+          <TouchableOpacity style={styles.socialButton} onPress={() => setShowStatusModal(true)}>
+            <Text style={styles.socialButtonText}>Requested a role recently?</Text>
           </TouchableOpacity>
+
+          <Modal
+            animationType="slide"
+            transparent={true}
+            visible={showStatusModal}
+            onRequestClose={() => setShowStatusModal(false)}
+          >
+            <View style={styles.modalOverlay}>
+              <View style={styles.modalContainer}>
+                <Text style={styles.modalTitle}>Check Registration Status</Text>
+                <TextInput
+                  placeholder="Enter your email"
+                  style={styles.modalInput}
+                  value={queryEmail}
+                  onChangeText={setQueryEmail}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                />
+                <TouchableOpacity
+                  style={styles.modalButton}
+                  onPress={checkRequestStatus}
+                >
+                  <Text style={styles.modalButtonText}>Check Status</Text>
+                </TouchableOpacity>
+
+                {checking ? (
+                  <ActivityIndicator style={{ marginTop: 16 }} color="#6C5CE7" />
+                ) : (
+                  <Text style={styles.modalMessage}>{statusMessage}</Text>
+                )}
+
+                <TouchableOpacity
+                  onPress={() => {
+                    setShowStatusModal(false);
+                    setQueryEmail('');
+                    setStatusMessage('');
+                  }}
+                  style={{ marginTop: 20 }}
+                >
+                  <Text style={{ color: '#6C5CE7', fontWeight: '600' }}>Close</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Modal>
 
           <View style={styles.footer}>
             <Text style={styles.footerText}>Don't have an account?</Text>
@@ -304,6 +389,53 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
   },
+  modalOverlay: {
+  flex: 1,
+  backgroundColor: 'rgba(0,0,0,0.5)',
+  justifyContent: 'center',
+  alignItems: 'center',
+  },
+  modalContainer: {
+    backgroundColor: '#FFF',
+    padding: 24,
+    borderRadius: 12,
+    width: '85%',
+    alignItems: 'center',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 12,
+    color: '#2D3436',
+  },
+  modalInput: {
+    borderWidth: 1,
+    borderColor: '#DFE6E9',
+    borderRadius: 8,
+    width: '100%',
+    padding: 12,
+    marginTop: 8,
+    marginBottom: 16,
+    fontSize: 16,
+  },
+  modalButton: {
+    backgroundColor: '#6C5CE7',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+  },
+  modalButtonText: {
+    color: '#FFF',
+    fontWeight: '600',
+    fontSize: 16,
+  },
+  modalMessage: {
+    marginTop: 16,
+    color: '#636E72',
+    textAlign: 'center',
+    fontSize: 14,
+  },
+
   footer: {
     flexDirection: 'row',
     justifyContent: 'center',

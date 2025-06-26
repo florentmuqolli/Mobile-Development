@@ -7,12 +7,14 @@ const Teacher = {
   findById: (id) => db.query('SELECT * FROM teachers WHERE id = ?', [id]),
   findByEmail: (email) => db.query('SELECT * FROM teachers WHERE email = ?', [email]),
   create: (data) => db.query(
-    'INSERT INTO teachers (name, email, phone, department, status, password) VALUES (?, ?, ?, ?, ?, ?)',
-    [data.name, data.email, data.phone, data.department, data.status, data.password ]
+    `INSERT INTO teachers ( phone, department, status, user_id)
+    VALUES (?, ?, ?, ?)`,
+    [data.phone, data.department, data.status, data.user_id]
   ),
+
   update: (id, data) => db.query(
-    'UPDATE teachers SET name = ?, email = ?, phone = ?, department = ?, status = ?, password = ? WHERE id = ?',
-    [data.name, data.email, data.phone, data.department, data.status, data.password, id]
+    'UPDATE teachers SET phone = ?, department = ?, status = ? WHERE id = ?',
+    [data.phone, data.department, data.status, id]
   ),
   delete: (id) => db.query('DELETE FROM teachers WHERE id = ?', [id]),
 };

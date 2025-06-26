@@ -9,6 +9,7 @@ import StudentManagementScreen from '../views/admin/StudentManagement';
 import TeacherManagementScreen from '../views/admin/TeacherManagement';
 import AddCourseScreen from '../views/admin/CourseManagement';
 import ForgotPasswordScreen from '../hooks/ForgotPassword';
+import AdminPendingRequestsScreen from '../views/admin/utils/PendingRequestsScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -24,6 +25,7 @@ const AppNavigator = () => {
         <Stack.Screen name="StudentManagement" component={StudentManagementScreen} options={{ headerShown: false }} />
         <Stack.Screen name="TeacherManagement" component={TeacherManagementScreen} options={{ headerShown: false }} />
         <Stack.Screen name="CourseManagement" component={AddCourseScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="PendingRequests" component={AdminPendingRequestsScreen} options={{ headerShown: false }} />
       </Stack.Navigator>
     </NavigationContainer>
   );

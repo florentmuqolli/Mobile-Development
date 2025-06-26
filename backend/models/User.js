@@ -11,7 +11,7 @@ const userSchema = new mongoose.Schema({
   gender: { type: String, enum: ['male', 'female', 'other'] },
   profilePicture: { type: String },
   joinDate: { type: Date, default: Date.now },
-  resetPasswordCode: String,       // Changed field name
+  resetPasswordCode: String,
   resetPasswordExpire: Date,
 }, { timestamps: true });
 
@@ -35,10 +35,9 @@ userSchema.methods.generateResetCode = function () {
   const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
 
   this.resetPasswordCode = crypto.createHash('sha256').update(resetCode).digest('hex');
+  this.resetPasswordExpire = Date.now() + 10 * 60 * 1000; 
 
-  this.resetPasswordExpire = Date.now() + 10 * 60 * 1000;
-
-  return resetCode;
+  return resetCode; 
 };
 
 module.exports = mongoose.model('User', userSchema);

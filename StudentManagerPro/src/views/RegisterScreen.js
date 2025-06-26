@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   View, 
   Text, 
@@ -10,7 +10,8 @@ import {
   Platform,
   Image,
   SafeAreaView,
-  ScrollView
+  ScrollView,
+  Modal
 } from 'react-native';
 import Toast from "react-native-toast-message";
 import axiosInstance from '../services/axiosInstance'; 
@@ -19,9 +20,16 @@ import ScreenWrapper from '../hooks/ScreenWrapper';
 
 const RegisterScreen = () => {
   const navigation = useNavigation();
-  const [form, setForm] = useState({ name: '', email: '', password: '' });
+  const [form, setForm] = useState({ 
+    name: '', 
+    email: '', 
+    password: '',
+    role: 'student' 
+  });
   const [loading, setLoading] = useState(false);
-
+  const [showApprovalModal, setShowApprovalModal] = useState(false);
+  const [countdown, setCountdown] = useState(60);
+  
   const handleChange = (field, value) => {
     setForm(prev => ({ ...prev, [field]: value }));
   };
@@ -54,17 +62,15 @@ const RegisterScreen = () => {
 
     setLoading(true);
     try {
-      await axiosInstance.post('/auth/register', form, { withCredentials: true });
-
+      await axiosInstance.post('/auth/request-register', form);
+      console.log("Success");
+      setLoading(false);
       Toast.show({
         type: "success",
-        text1: "Registered successfully!",
-        text2: "You can now sign in with your credentials.",
+        text1: "Applied Successfully",
       });
-      
-      setTimeout(() => {
-        navigation.navigate('Login');
-      }, 1500);
+      setShowApprovalModal(true);
+      startCountdown();
     } catch (error) {
       const message = error.response?.data?.message || 'Something went wrong';
       Toast.show({
@@ -76,6 +82,33 @@ const RegisterScreen = () => {
       setLoading(false);
     }
   };
+
+  const startCountdown = () => {
+    const timer = setInterval(() => {
+      setCountdown(prev => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          navigation.navigate('Login');
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  };
+
+  const handleLoginNow = () => {
+    setShowApprovalModal(false);
+    navigation.navigate('Login');
+  };
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#6C5CE7" />
+      </View>
+    );
+  }
 
   return (
     <ScreenWrapper>
@@ -133,13 +166,49 @@ const RegisterScreen = () => {
               <Text style={styles.helperText}>Must be at least 6 characters</Text>
             </View>
 
+            <View style={styles.inputContainer}>
+                <Text style={styles.label}>I am a</Text>
+                <View style={styles.roleContainer}>
+                  <TouchableOpacity
+                    style={[
+                      styles.roleButton,
+                      form.role === 'student' && styles.roleButtonActive
+                    ]}
+                    onPress={() => handleChange('role', 'student')}
+                  >
+                    <Text style={[
+                      styles.roleButtonText,
+                      form.role === 'student' && styles.roleButtonTextActive
+                    ]}>
+                      Student
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[
+                      styles.roleButton,
+                      form.role === 'teacher' && styles.roleButtonActive
+                    ]}
+                    onPress={() => handleChange('role', 'teacher')}
+                  >
+                    <Text style={[
+                      styles.roleButtonText,
+                      form.role === 'teacher' && styles.roleButtonTextActive
+                    ]}>
+                      Teacher
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+
             <TouchableOpacity
+              onPress={() => {
+                if (!loading) handleSubmit();
+              }}
               style={[
                 styles.registerButton,
                 (form.password.length < 6 || form.name.length < 3 || !form.email.includes('@')) && 
                 styles.disabledButton
               ]}
-              onPress={handleSubmit}
               disabled={loading || form.password.length < 6 || form.name.length < 3 || !form.email.includes('@')}
             >
               {loading ? (
@@ -148,6 +217,37 @@ const RegisterScreen = () => {
                 <Text style={styles.buttonText}>Create Account</Text>
               )}
             </TouchableOpacity>
+
+            <Modal
+                animationType="fade"
+                transparent={true}
+                visible={showApprovalModal}
+                onRequestClose={() => setShowApprovalModal(false)}
+              >
+                <View style={styles.modalOverlay}>
+                  <View style={styles.modalContainer}>
+                    <View style={styles.modalContent}>
+                      <Text style={styles.modalTitle}>
+                        {form.role === 'teacher' ? 'Teacher' : 'Student'} Account Pending Approval
+                      </Text>
+                      <Text style={styles.modalText}>
+                        Your {form.role} account will be ready to use in {countdown} seconds after admin approval.
+                      </Text>
+                      <View style={styles.modalFooter}>
+                        <Text style={styles.modalFooterText}>
+                          Go to login now?
+                        </Text>
+                        <TouchableOpacity 
+                          style={styles.modalButton}
+                          onPress={handleLoginNow}
+                        >
+                          <Text style={styles.modalButtonText}>OK</Text>
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  </View>
+                </View>
+              </Modal>
 
             <Text style={styles.termsText}>
               By registering, you agree to our{' '}
@@ -321,6 +421,86 @@ const styles = StyleSheet.create({
   loginLink: {
     color: '#6C5CE7',
     fontSize: 14,
+    fontWeight: '600',
+  },
+  roleContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 8,
+  },
+  roleButton: {
+    flex: 1,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#DFE6E9',
+    borderRadius: 12,
+    alignItems: 'center',
+    marginHorizontal: 4,
+  },
+  roleButtonActive: {
+    backgroundColor: '#6C5CE7',
+    borderColor: '#6C5CE7',
+  },
+  roleButtonText: {
+    color: '#636E72',
+    fontWeight: '500',
+  },
+  roleButtonTextActive: {
+    color: '#FFF',
+  },
+
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContainer: {
+    width: '85%',
+    backgroundColor: '#FFF',
+    borderRadius: 16,
+    padding: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 20,
+    elevation: 5,
+  },
+  modalContent: {
+    alignItems: 'center',
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#2D3436',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  modalText: {
+    fontSize: 16,
+    color: '#636E72',
+    textAlign: 'center',
+    marginBottom: 24,
+    lineHeight: 24,
+  },
+  modalFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 16,
+  },
+  modalFooterText: {
+    color: '#636E72',
+    marginRight: 12,
+  },
+  modalButton: {
+    backgroundColor: '#6C5CE7',
+    borderRadius: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+  },
+  modalButtonText: {
+    color: '#FFF',
     fontWeight: '600',
   },
 });

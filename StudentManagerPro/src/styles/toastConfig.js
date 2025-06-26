@@ -42,6 +42,7 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 5,
     marginBottom: 10,
+    zIndex: 999
   },
   successToast: {
     backgroundColor: '#00B894',

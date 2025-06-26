@@ -7,12 +7,14 @@ const Student = {
   getById: (id) => db.query('SELECT * FROM students WHERE id = ?', [id]),
   getByEmail: (email) => db.query('SELECT * FROM students WHERE email = ?', [email]),
   create: (data) => db.query(
-    'INSERT INTO students (name, email, phone, address, status, password) VALUES (?, ?, ?, ?, ?, ?)', 
-    [data.name, data.email, data.phone, data.address, data.status || 'Active', data.password ]
+    `INSERT INTO students ( phone, address, status, user_id)
+    VALUES (?, ?, ?, ?)`,
+    [data.phone, data.address, data.status || 'Active', data.user_id]
   ),
+
   update: (id, data) => db.query(
-    'UPDATE students SET name = ?, email = ?, phone = ?, address = ?, status = ?, password = ? WHERE id = ?',
-    [data.name, data.email, data.phone, data.address, data.status, data.password, id]
+    'UPDATE students SET phone = ?, address = ?, status = ? WHERE id = ?',
+    [data.phone, data.address, data.status, id]
   ),
   delete: (id) => db.query('DELETE FROM students WHERE id = ?', [id]),
 };

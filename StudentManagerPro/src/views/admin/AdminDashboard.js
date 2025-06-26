@@ -267,7 +267,7 @@ const AdminDashboard = () => {
                   {[
                     { icon: '👥', text: 'Manage Users', color: '#6C5CE7', action: () => setShowUserModal(true) },
                     { icon: '➕', text: 'Add Course', color: '#00B894', action: () => navigation.navigate('CourseManagement') },
-                    { icon: '📊', text: 'Analytics', color: '#FD79A8', action: () => navigation.navigate('Analytics') },
+                    { icon: '📊', text: 'Requests', color: '#FD79A8', action: () => navigation.navigate('PendingRequests') },
                     { icon: '⚙️', text: 'Settings', color: '#FDCB6E', action: () => navigation.navigate('Settings') },
                   ].map((item, index) => (
                     <TouchableOpacity

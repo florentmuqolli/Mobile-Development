@@ -23,7 +23,8 @@ const StudentFormModal = ({ visible, onClose, student, refreshStudents }) => {
         password: student.password || '',
         phone: student.phone || '',
         address: student.address || '',
-        status: student.status || 'Active'
+        status: student.status || 'Active',
+        user_id: student.user_id || '',
       });
     } else {
       setFormData({
