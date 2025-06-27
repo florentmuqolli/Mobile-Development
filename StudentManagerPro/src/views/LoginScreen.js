@@ -13,6 +13,7 @@ import {
   SafeAreaView
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { BackArrowIcon } from "../assets/Icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Toast from "react-native-toast-message";
 import axiosInstance from "../services/axiosInstance";
@@ -70,7 +71,7 @@ const Login = () => {
         if (response.data.user.role === "admin") {
           navigation.replace("AdminDashboard");
         } else if (response.data.user.role === "teacher") {
-          navigation.replace("StudentHome");
+          navigation.replace("TeacherDashboard");
         } else {
           navigation.replace("StudentHome");
         }
@@ -144,6 +145,9 @@ const Login = () => {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.container}
       >
+        <TouchableOpacity onPress={() => navigation.navigate('Home')}>
+          <BackArrowIcon/>
+        </TouchableOpacity>
         <View style={styles.header}>
           <Image 
             source={require('../assets/logo2.png')} 

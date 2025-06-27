@@ -10,13 +10,16 @@ import TeacherManagementScreen from '../views/admin/TeacherManagement';
 import AddCourseScreen from '../views/admin/CourseManagement';
 import ForgotPasswordScreen from '../hooks/ForgotPassword';
 import AdminPendingRequestsScreen from '../views/admin/utils/PendingRequestsScreen';
+import TeacherDashboard from '../views/teacher/TeacherDashboard';
+import HomeScreen from '../views/HomeScreen';
 
 const Stack = createNativeStackNavigator();
 
 const AppNavigator = () => {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="Login">
+      <Stack.Navigator initialRouteName="Home">
+        <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
         <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
         <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} options={{ headerShown: false }} />
         <Stack.Screen name="Register" component={RegisterScreen} options={{ headerShown: false }} />
@@ -26,6 +29,7 @@ const AppNavigator = () => {
         <Stack.Screen name="TeacherManagement" component={TeacherManagementScreen} options={{ headerShown: false }} />
         <Stack.Screen name="CourseManagement" component={AddCourseScreen} options={{ headerShown: false }} />
         <Stack.Screen name="PendingRequests" component={AdminPendingRequestsScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="TeacherDashboard" component={TeacherDashboard} options={{ headerShown: false }} />
       </Stack.Navigator>
     </NavigationContainer>
   );

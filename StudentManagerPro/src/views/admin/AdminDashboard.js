@@ -155,7 +155,6 @@ const AdminDashboard = () => {
               },
             ]}
           >
-
             <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
               <LogoutIcon />
             </TouchableOpacity>
