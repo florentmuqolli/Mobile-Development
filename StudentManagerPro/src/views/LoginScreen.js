@@ -36,7 +36,7 @@ const Login = () => {
       if (token && role === "admin") {
         navigation.replace("AdminDashboard");
       } else if (token && role === "teacher") {
-        navigation.replace("TeacherHome");
+        navigation.replace("TeacherDashboard");
       }
     }
     checkToken();

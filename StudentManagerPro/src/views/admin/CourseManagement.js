@@ -98,6 +98,7 @@ const CourseManagementScreen = () => {
               <View key={course.id} style={styles.card}>
                 <View style={styles.cardHeader}>
                   <Text style={styles.cardName}>{course.title}</Text>
+                  <Text style={styles.cardName}>{course.id}</Text>
                   <View style={[
                     styles.statusBadge,
                     course.status === 'Active' ? styles.activeBadge : styles.inactiveBadge

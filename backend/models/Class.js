@@ -5,6 +5,12 @@ const Class = {
   getCount: () => db.query('SELECT COUNT(*) AS count FROM classes'),
   getCountSince: (date) => db.query('SELECT COUNT(*) AS count FROM classes WHERE created_at >= ?', [date]),
   getById: (id) => db.query('SELECT * FROM classes WHERE id = ?', [id]),
+  countByTeacherId: async (teacherId) => {
+    const [[result]] = await db.execute(`
+      SELECT COUNT(*) AS totalCourses FROM classes WHERE teacher_id = ?
+    `, [teacherId]);
+    return result.totalCourses;
+  },
   create: (data) =>
     db.query('INSERT INTO classes (title, description, teacher_id, schedule, room, status) VALUES (?, ?, ?, ?, ?, ?)', [
       data.title,

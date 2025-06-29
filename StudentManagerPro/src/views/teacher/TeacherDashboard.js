@@ -12,8 +12,9 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { LogoutIcon } from '../../assets/Icons';
+import { LogoutIcon, RefreshIcon } from '../../assets/Icons';
 import ScreenWrapper from '../../hooks/ScreenWrapper';
+import axiosInstance from '../../services/axiosInstance';
 import useLogout from "../../hooks/Logout";
 
 const TeacherDashboard = () => {
@@ -24,28 +25,26 @@ const TeacherDashboard = () => {
   const [stats, setStats] = useState(null);
   const [upcomingClasses, setUpcomingClasses] = useState([]);
   const [recentStudents, setRecentStudents] = useState([]);
+  const [lastUpdated, setLastUpdated] = useState(null);
+  const [elapsedTime, setElapsedTime] = useState('');
   const [showLogout, setShowLogout] = useState(false);
   const logoutTranslateX = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    setLoading(true);
-    setTimeout(() => {
-      setStats({
-        totalStudents: 42,
-        activeClasses: 5,
-        attendanceRate: '92%'
-      });
-      setUpcomingClasses([
-        { id: '1', name: 'Mathematics 101', time: 'Today, 10:00 AM', room: 'B-204' },
-        { id: '2', name: 'Advanced Physics', time: 'Tomorrow, 2:00 PM', room: 'A-103' },
-      ]);
-      setRecentStudents([
-        { id: '1', name: 'Alex Johnson', course: 'Mathematics 101', lastActive: '2 hours ago' },
-        { id: '2', name: 'Maria Garcia', course: 'Advanced Physics', lastActive: '1 day ago' },
-      ]);
-      setLoading(false);
-    }, 1000);
-  }, []);
+      if (!lastUpdated) return;
+  
+      const interval = setInterval(() => {
+        const secondsAgo = Math.floor((Date.now() - lastUpdated.getTime()) / 1000);
+        if (secondsAgo < 60) {
+          setElapsedTime(`${secondsAgo}s ago`);
+        } else {
+          const minutes = Math.floor(secondsAgo / 60);
+          setElapsedTime(`${minutes}m ago`);
+        }
+      }, 1000); 
+  
+      return () => clearInterval(interval); 
+    }, [lastUpdated]);
 
   const toggleLogout = () => {
     if (showLogout) {
@@ -63,6 +62,73 @@ const TeacherDashboard = () => {
       }).start();
     }
   };
+
+  const fetchStats = async () => {
+    setLoading(true);
+    try {
+      const [teacherRes, attendanceRes] = await Promise.all([
+        axiosInstance.get('/teachers/teacher-stats'),
+        axiosInstance.get('/attendance/summary/teacher'),
+      ]);
+
+      const teacherData = teacherRes.data;
+      const attendanceCourses = attendanceRes.data;
+
+      const averageAttendance =
+        attendanceCourses.length > 0
+          ? Math.round(attendanceCourses.reduce((acc, curr) => acc + curr.average_attendance_rate, 0) / attendanceCourses.length)
+          : 0;
+
+      setStats([
+        {
+          id: '1',
+          title: 'Total Students',
+          value: teacherData.students.total.toString(),
+          change: `+${teacherData.students.new}`,
+          icon: '👨‍🎓',
+          color: '#6C5CE7',
+        },
+        {
+          id: '2',
+          title: 'Active Courses',
+          value: teacherData.courses.total.toString(),
+          change: `+${teacherData.courses.new}`,
+          icon: '📚',
+          color: '#00B894',
+        },
+        {
+          id: '3',
+          title: 'Avg Attendance',
+          value: `${averageAttendance}%`,
+          icon: '📊',
+          color: '#0984E3',
+        },
+      ]);
+
+      setUpcomingClasses(attendanceCourses.map(course => ({
+        id: course.class_id,
+        name: course.class_name,
+        time: 'Custom Time',
+        room: 'Room N/A',
+        attendanceRate: course.average_attendance_rate,
+      })));
+
+      setLastUpdated(new Date());
+    } catch (err) {
+      console.error('Failed to fetch teacher stats:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+  fetchStats();
+  setRecentStudents([
+    { id: '1', name: 'Alex Johnson', course: 'Mathematics 101', lastActive: '2 hours ago' },
+    { id: '2', name: 'Maria Garcia', course: 'Advanced Physics', lastActive: '1 day ago' },
+  ]);
+}, []);
+
 
   if (loading) {
     return (
@@ -112,40 +178,47 @@ const TeacherDashboard = () => {
           </View>
         </View>
 
+        <View style={styles.statusBar}>
+          {elapsedTime && (
+            <Text style={styles.lastUpdated}>Last updated {elapsedTime}</Text>
+          )}
+          <TouchableOpacity style={styles.refreshButton} onPress={() => {
+            fetchStats();
+            //fetchRecentActivities();
+          }}>
+            <RefreshIcon />
+          </TouchableOpacity>
+        </View>
+
         <ScrollView 
           horizontal 
           showsHorizontalScrollIndicator={false}
-          style={styles.statsContainer}
+          contentContainerStyle={styles.statsScrollContainer}
         >
-          {stats && [
-            { 
-              title: 'Students', 
-              value: stats.totalStudents, 
-              icon: 'people', 
-              color: '#6C5CE7' 
-            },
-            { 
-              title: 'Classes', 
-              value: stats.activeClasses, 
-              icon: 'class', 
-              color: '#00B894' 
-            },
-            { 
-              title: 'Attendance', 
-              value: stats.attendanceRate, 
-              icon: 'check-circle', 
-              color: '#FD79A8' 
-            },
-          ].map((stat, index) => (
-            <View key={index} style={[styles.statCard, { backgroundColor: stat.color }]}>
-              <View style={styles.statIconContainer}>
-                <Icon name={stat.icon} size={24} color="#FFF" />
-              </View>
-              <Text style={styles.statValue}>{stat.value}</Text>
-              <Text style={styles.statTitle}>{stat.title}</Text>
+        {stats ? stats.map(item => (
+          <View key={item.id} style={[
+            styles.statCard,
+            { backgroundColor: item.color + '20' },
+            item.alert && styles.alertCard
+          ]}>
+            <View style={styles.statIconContainer}>
+              <Text style={styles.statIcon}>{item.icon}</Text>
             </View>
-          ))}
-        </ScrollView>
+            <Text style={styles.statValue}>{item.value}</Text>
+            <Text style={styles.statTitle}>{item.title}</Text>
+            {item.change && (
+              <View style={[
+                styles.changeBadge,
+                { backgroundColor: item.color + '40' } 
+              ]}>
+                <Text style={styles.changeText}>{item.change}</Text>
+              </View>
+            )}
+          </View>
+        )) : (
+          <ActivityIndicator size="small" color="#6C5CE7" />
+        )}
+      </ScrollView>
 
         <View style={styles.tabContainer}>
           {['classes', 'students', 'resources'].map((tab) => (
@@ -192,6 +265,13 @@ const TeacherDashboard = () => {
                     <View style={styles.classMeta}>
                       <Icon name="place" size={16} color="#636E72" />
                       <Text style={styles.classRoom}>{classItem.room}</Text>
+                      <View style={styles.attendanceRow}>
+                        <Icon name="bar-chart" size={16} color="#636E72" />
+                        <Text style={styles.attendanceText}>
+                          Attendance Rate: {classItem.attendanceRate}%
+                        </Text>
+                      </View>
+
                     </View>
                   </View>
                   <Icon name="chevron-right" size={24} color="#B2BEC3" />
@@ -264,13 +344,13 @@ const TeacherDashboard = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    padding: 24,
     backgroundColor: '#F8F9FA',
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 24,
     paddingBottom: 16,
   },
   greeting: {
@@ -316,40 +396,105 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     zIndex: 2, 
   },
-  statsContainer: {
-    paddingHorizontal: 24,
-    paddingBottom: 16,
+  statusBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 5,
+    marginBottom: 16,
+  },
+  lastUpdated: {
+    color: '#636E72',
+    fontSize: 12,
+  },
+  refreshButton: {
+    backgroundColor: '#6C5CE7',
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  statsScrollContainer: {
+    paddingHorizontal: 8,
+    paddingVertical: 8,
   },
   statCard: {
-    width: 140,
-    borderRadius: 16,
-    padding: 16,
+    width: 150,
+    borderRadius: 20,
+    padding: 20,
     marginRight: 16,
+    backgroundColor: '#6C5CE7',
+    overflow: 'hidden',
+    elevation: 5,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
-    elevation: 5,
   },
   statIconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(255,255,255,0.15)',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 12,
+  },
+  statIcon: {
+    fontSize: 24,
+    color: '#FFF',
   },
   statValue: {
     fontSize: 24,
     fontWeight: '700',
     color: '#FFF',
     marginBottom: 4,
+    textShadowColor: 'rgba(0,0,0,0.2)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
   statTitle: {
     fontSize: 14,
     color: '#FFF',
     opacity: 0.9,
+    fontWeight: '500',
+  },
+  changeBadge: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  changeText: {
+    fontSize: 12,
+    color: '#FFF',
+    fontWeight: '600',
+  },
+  alertCard: {
+    borderLeftWidth: 4,
+    borderLeftColor: '#FF7675',
+  },
+  changeBadge: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  changeText: {
+    fontSize: 12,
+    color: '#FFF',
+    fontWeight: '600',
   },
   tabContainer: {
     flexDirection: 'row',
@@ -438,6 +583,17 @@ const styles = StyleSheet.create({
     color: '#636E72',
     marginLeft: 8,
   },
+  attendanceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  attendanceText: {
+    fontSize: 14,
+    color: '#636E72',
+    marginLeft: 8,
+  },
+
   quickActions: {
     flexDirection: 'row',
     justifyContent: 'space-between',

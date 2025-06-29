@@ -13,6 +13,7 @@ const enrollmentRoutes = require('./routes/enrollmentRoutes');
 const classRoutes = require('./routes/classRoutes');
 const assignmentRoutes = require('./routes/assignmentRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+const attendanceRoutes = require('./routes/attendanceRoutes');
 
 const app = express();
 
@@ -51,6 +52,7 @@ app.use('/api/submission', submissionRoutes);
 app.use('/api/class', classRoutes);
 app.use('/api/assignment', assignmentRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/attendance', attendanceRoutes);
 
 
 app.use((err, req, res, next) => {

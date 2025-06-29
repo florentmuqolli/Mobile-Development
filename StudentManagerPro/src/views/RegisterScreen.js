@@ -88,19 +88,26 @@ const RegisterScreen = () => {
       setCountdown(prev => {
         if (prev <= 1) {
           clearInterval(timer);
-          navigation.navigate('Login');
           return 0;
         }
         return prev - 1;
       });
     }, 1000);
-    return () => clearInterval(timer);
   };
+
+  useEffect(() => {
+    if (countdown === 0 && showApprovalModal) {
+      navigation.navigate('Login');
+    }
+  }, [countdown, showApprovalModal]);
+
 
   const handleLoginNow = () => {
     setShowApprovalModal(false);
+    setCountdown(0); 
     navigation.navigate('Login');
   };
+
 
   if (loading) {
     return (

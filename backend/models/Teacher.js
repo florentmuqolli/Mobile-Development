@@ -5,6 +5,10 @@ const Teacher = {
   getCount: () => db.query('SELECT COUNT(*) AS count FROM teachers'),
   getCountSince: (date) => db.query('SELECT COUNT(*) AS count FROM teachers WHERE created_at >= ?', [date]),
   findById: (id) => db.query('SELECT * FROM teachers WHERE id = ?', [id]),
+  getByUserId: async (userId) => {
+    const [rows] = await db.execute('SELECT id FROM teachers WHERE user_id = ?', [userId]);
+    return rows[0]; 
+  },
   findByEmail: (email) => db.query('SELECT * FROM teachers WHERE email = ?', [email]),
   create: (data) => db.query(
     `INSERT INTO teachers ( phone, department, status, user_id)

@@ -8,6 +8,17 @@ const Enrollment = {
   getByStudentId: (studentId) =>
     db.query('SELECT * FROM enrollments WHERE student_id = ?', [studentId]),
 
+  countStudentsByTeacherId: async (teacherId) => {
+    const [[result]] = await db.execute(`
+      SELECT COUNT(DISTINCT student_id) AS totalStudents
+      FROM enrollments
+      WHERE class_id IN (
+        SELECT id FROM classes WHERE teacher_id = ?
+      )
+    `, [teacherId]);
+    return result.totalStudents;
+  },
+
   getByClassId: (classId) =>
     db.query('SELECT * FROM enrollments WHERE class_id = ?', [classId]),
 

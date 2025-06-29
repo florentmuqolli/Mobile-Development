@@ -1,5 +1,7 @@
 const Teacher = require('../models/Teacher');
 const User = require('../models/User');
+const Enrollment = require('../models/Enrollment');
+const Class = require('../models/Class');
 const ActivityLog = require('../models/ActivityLog');
 
 exports.getAllTeachers = async (req, res) => {
@@ -7,7 +9,7 @@ exports.getAllTeachers = async (req, res) => {
     const [teachers] = await Teacher.getAll();
 
     const enriched = await Promise.all(teachers.map(async (teacher) => {
-      const user = await User.findById(teacher.user_id).select('name email password role');
+      const user = await User.findById(teacher.user_id).select(' id name email password role');
       return {
         ...teacher,
         name: user?.name || '',
@@ -26,7 +28,7 @@ exports.getAllTeachers = async (req, res) => {
 
 exports.getTeacherById = async (req, res) => {
   try {
-    const [rows] = await Teacher.getById(req.params.id);
+    const [rows] = await Teacher.findById(req.params.id);
     if (rows.length === 0) return res.status(404).json({ message: 'Teacher not found' });
 
     const teacher = rows[0];
@@ -130,3 +132,32 @@ exports.deleteTeacher = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+
+exports.getTeacherStats = async (req, res) => {
+  try {
+    const userId = req.user?.id;
+    console.log('User ID from token(stats): ', userId);
+
+    const teacher = await Teacher.getByUserId(userId);
+    if (!teacher) {
+      return res.status(404).json({ message: 'Teacher not found' });
+    }
+
+    const teacherId = teacher.id;
+
+    const totalStudents = await Enrollment.countStudentsByTeacherId(teacherId);
+    const totalCourses = await Class.countByTeacherId(teacherId);
+
+    console.log('student count: ', totalStudents);
+    console.log('course count: ', totalCourses);
+
+    res.json({
+      students: { total: totalStudents, new: 0 }, 
+      courses: { total: totalCourses, new: 0 },
+    });
+  } catch (err) {
+    console.error("Teacher dashboard stats error:", err);
+    res.status(500).json({ message: 'Failed to load teacher dashboard stats' });
+  }
+};
+

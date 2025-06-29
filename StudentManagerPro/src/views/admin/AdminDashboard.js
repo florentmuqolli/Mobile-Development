@@ -82,6 +82,7 @@ const AdminDashboard = () => {
     setLoading(true);
     try {
       const res = await axiosInstance.get('/admin/dashboard-stats');
+      setLoading(false);
       const data = res.data;
       setStats([
         {
@@ -311,7 +312,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 16,
   },
   headerActions: {
     flexDirection: 'row',
@@ -360,6 +361,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    padding: 5,
     marginBottom: 16,
   },
   lastUpdated: {
