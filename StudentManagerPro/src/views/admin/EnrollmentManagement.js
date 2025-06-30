@@ -5,48 +5,44 @@ import axiosInstance from '../../services/axiosInstance';
 import ScreenWrapper from '../../hooks/ScreenWrapper';
 import { SearchIcon, EditIcon, DeleteIcon, BackArrowIcon, AddIcon } from '../../assets/Icons';
 import Toast from 'react-native-toast-message';
-import  CourseFormModal  from './utils/CourseFormModal';
+import EnrollmentFormModal from './utils/EnrollmentFormModal';
 
-const CourseManagementScreen = () => {
+const EnrollmentManagementScreen = () => {
   const navigation = useNavigation();
   const [searchQuery, setSearchQuery] = useState('');
-  const [courses, setCourses] = useState([]);
+  const [enrollments, setEnrollment] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
-  const [selectedCourse, setSelectedCourse] = useState(null);
+  const [selectedenrollment, setSelectedEnrollment] = useState(null);
 
-  const fetchCourses = async () => {
+  const fetchEnrollments = async () => {
     setLoading(true);
     try {
-      const res = await axiosInstance.get('/class'); 
+      const res = await axiosInstance.get('/enrollment'); 
       setLoading(false);
-      setCourses(res.data);
+      console.log('enrollments: ', res.data);
+      setEnrollment(res.data);
     } catch (err) {
-      console.error('Error fetching courses:', err);
+      console.error('Error fetching enrollments:', err);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchCourses();
+    fetchEnrollments();
   }, []);
 
-  const filteredCourses = courses.filter(course =>
-    course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    course.description.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const deleteCourse = async (id) => {
+  const deleteEnrollment = async (id) => {
     try {
-      await axiosInstance.delete(`/class/${id}`);
+      await axiosInstance.delete(`/enrollment/${id}`);
       Toast.show({
         type: "success",
-        text1: "Course Deleted",
+        text1: "Enrollment Deleted",
       });
-      setCourses(courses.filter(course => course.id !== id));
+      setEnrollment(enrollments.filter(enrollment => enrollment.id !== id));
     } catch (err) {
-      console.error('Error deleting course:', err);
+      console.error('Error deleting enrollment:', err);
     }
   };
 
@@ -65,7 +61,7 @@ const CourseManagementScreen = () => {
           <TouchableOpacity onPress={() => navigation.goBack()}>
             <BackArrowIcon/>
           </TouchableOpacity>
-          <Text style={styles.title}>Course Management</Text>
+          <Text style={styles.title}>Enrollments Management</Text>
           <View style={{ width: 24 }} />
         </View>
         <View style={styles.actionBar}>
@@ -73,7 +69,7 @@ const CourseManagementScreen = () => {
             <SearchIcon/>
             <TextInput
               style={styles.searchInput}
-              placeholder="Search courses..."
+              placeholder="Search enrollments..."
               value={searchQuery}
               onChangeText={setSearchQuery}
               placeholderTextColor="#999"
@@ -82,7 +78,7 @@ const CourseManagementScreen = () => {
           <TouchableOpacity 
             style={styles.addButton}
             onPress={() => {
-              setSelectedCourse(null);
+              setSelectedEnrollment(null);
               setModalVisible(true);
             }}
           >
@@ -94,37 +90,17 @@ const CourseManagementScreen = () => {
           {loading ? (
             <ActivityIndicator size="large" color="#6C5CE7" style={{ marginTop: 40 }} />
           ) : (
-            filteredCourses.map((course) => (
-              <View key={course.id} style={styles.card}>
+            enrollments.map((enrollment) => (
+              <View key={enrollment.id} style={styles.card}>
                 <View style={styles.cardHeader}>
-                  <Text style={styles.cardName}>Title: {course.title}</Text>
-                  <Text style={styles.cardName}>ID: {course.id}</Text>
-                  <View style={[
-                    styles.statusBadge,
-                    course.status === 'Active' ? styles.activeBadge : styles.inactiveBadge
-                  ]}>
-                    <Text style={styles.statusText}>{course.status}</Text>
-                  </View>
+                  <Text style={styles.cardName}>Student: {enrollment.student_id}</Text>
+                  <Text style={styles.cardName}>Class: {enrollment.class_id}</Text>
+                  <Text style={styles.cardName}>Enrolled at: {enrollment.enrolled_at}</Text>
                 </View>
-                <Text style={styles.cardEmail}>Description: {course.description}</Text>
-                <Text style={styles.cardEmail}>Teacher ID: {course.teacher_id}</Text>
-                <Text style={styles.cardEmail}>Schedule: {course.schedule}</Text>
-                <Text style={styles.cardEmail}>Day: {course.day}</Text>
-                <Text style={styles.cardEmail}>Room: {course.room}</Text>
                 <View style={styles.cardActions}>
                   <TouchableOpacity
-                    style={styles.cardButton}
-                    onPress={() => {
-                      setSelectedCourse(course);
-                      setModalVisible(true);
-                    }}
-                  >
-                    <EditIcon size={16} />
-                    <Text style={styles.cardButtonText}>Edit</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
                     style={[styles.cardButton, { backgroundColor: '#FFEBEE' }]}
-                    onPress={() => deleteCourse(course.id)}
+                    onPress={() => deleteEnrollment(enrollment.id)}
                   >
                     <DeleteIcon size={16} color="#FF5252" />
                     <Text style={[styles.cardButtonText, { color: '#FF5252' }]}>Delete</Text>
@@ -135,11 +111,11 @@ const CourseManagementScreen = () => {
           )}
         </ScrollView>
       </View>
-      <CourseFormModal
+      <EnrollmentFormModal
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
-        course={selectedCourse}
-        refreshCourses={fetchCourses}
+        enrollment={selectedenrollment}
+        refreshEnrollments={fetchEnrollments}
       />
     </ScreenWrapper>
     
@@ -206,7 +182,7 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   card: {
-    backgroundColor: '#FFF',
+    backgroundColor: '#9AAADB',
     borderRadius: 10,
     padding: 15,
     marginBottom: 12,
@@ -233,8 +209,9 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   cardActions: {
+    paddingTop: 10,
     flexDirection: 'row',
-    justifyContent: 'flex-end',
+    justifyContent: 'center',
   },
   cardButton: {
     flexDirection: 'row',
@@ -251,21 +228,6 @@ const styles = StyleSheet.create({
     marginLeft: 6,
     fontWeight: '500',
   },
-  statusBadge: {
-    paddingHorizontal: 6,
-    paddingVertical: 3,
-    borderRadius: 10,
-  },
-  activeBadge: {
-    backgroundColor: '#E3F9E5',
-  },
-  inactiveBadge: {
-    backgroundColor: '#FFEBEE',
-  },
-  statusText: {
-    fontSize: 12,
-    fontWeight: '600',
-  },
 });
 
-export default CourseManagementScreen;
+export default EnrollmentManagementScreen;

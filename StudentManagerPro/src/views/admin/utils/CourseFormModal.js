@@ -9,6 +9,7 @@ const CourseFormModal = ({ visible, onClose, course, refreshCourses }) => {
     description: '',
     teacher_id: '',
     schedule: '',
+    day: '',
     room: '',
     status: '' || 'Active'
   });
@@ -22,6 +23,7 @@ const CourseFormModal = ({ visible, onClose, course, refreshCourses }) => {
         description: course.description || '',
         teacher_id: course.teacher_id || '',
         schedule: course.schedule || '',
+        day: course.day || '',
         room: course.room || '',
         status: course.status || 'Active'
       });
@@ -31,6 +33,7 @@ const CourseFormModal = ({ visible, onClose, course, refreshCourses }) => {
         description: '',
         teacher_id: '',
         schedule: '',
+        day: '',
         room: '',
         status: '' || 'Active'
       });
@@ -129,6 +132,17 @@ const CourseFormModal = ({ visible, onClose, course, refreshCourses }) => {
               onChangeText={(text) => setFormData({...formData, schedule: text})}
             />
             {errors.schedule && <Text style={styles.errorText}>{errors.schedule}</Text>}
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Day*</Text>
+            <TextInput
+              style={[styles.input, errors.day && styles.inputError]}
+              placeholder="Friday"
+              value={formData.day}
+              onChangeText={(text) => setFormData({...formData, day: text})}
+            />
+            {errors.day && <Text style={styles.errorText}>{errors.day}</Text>}
           </View>
 
           <View style={styles.inputGroup}>

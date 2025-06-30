@@ -64,62 +64,90 @@ const TeacherDashboard = () => {
   };
 
   const fetchStats = async () => {
-    setLoading(true);
-    try {
-      const [teacherRes, attendanceRes] = await Promise.all([
-        axiosInstance.get('/teachers/teacher-stats'),
-        axiosInstance.get('/attendance/summary/teacher'),
-      ]);
+  setLoading(true);
+  try {
+    const [teacherRes, attendanceRes, classRes] = await Promise.all([
+      axiosInstance.get('/teachers/teacher-stats'),
+      axiosInstance.get('/attendance/summary/teacher'),
+      axiosInstance.get('/class/specific-class'),
+    ]);
 
-      const teacherData = teacherRes.data;
-      const attendanceCourses = attendanceRes.data;
+    const teacherData = teacherRes.data;
+    const attendanceCourses = attendanceRes.data;
+    const specificClass = classRes.data;
 
-      const averageAttendance =
-        attendanceCourses.length > 0
-          ? Math.round(attendanceCourses.reduce((acc, curr) => acc + curr.average_attendance_rate, 0) / attendanceCourses.length)
-          : 0;
+    const averageAttendance =
+      attendanceCourses.length > 0
+        ? Math.round(attendanceCourses.reduce((acc, curr) => acc + curr.average_attendance_rate, 0) / attendanceCourses.length)
+        : 0;
 
-      setStats([
-        {
-          id: '1',
-          title: 'Total Students',
-          value: teacherData.students.total.toString(),
-          change: `+${teacherData.students.new}`,
-          icon: '👨‍🎓',
-          color: '#6C5CE7',
-        },
-        {
-          id: '2',
-          title: 'Active Courses',
-          value: teacherData.courses.total.toString(),
-          change: `+${teacherData.courses.new}`,
-          icon: '📚',
-          color: '#00B894',
-        },
-        {
-          id: '3',
-          title: 'Avg Attendance',
-          value: `${averageAttendance}%`,
-          icon: '📊',
-          color: '#0984E3',
-        },
-      ]);
+    setStats([
+      {
+        id: '1',
+        title: 'Total Students',
+        value: teacherData.students.total.toString(),
+        change: `+${teacherData.students.new}`,
+        icon: '👨‍🎓',
+      },
+      {
+        id: '2',
+        title: 'Active Courses',
+        value: teacherData.courses.total.toString(),
+        change: `+${teacherData.courses.new}`,
+        icon: '📚',
+      },
+      {
+        id: '3',
+        title: 'Avg Attendance',
+        value: `${averageAttendance}%`,
+        icon: '📊',
+      },
+    ]);
 
-      setUpcomingClasses(attendanceCourses.map(course => ({
-        id: course.class_id,
-        name: course.class_name,
-        time: 'Custom Time',
-        room: 'Room N/A',
-        attendanceRate: course.average_attendance_rate,
-      })));
+    const upcoming = specificClass.filter((course) => {
+      if (!course.day || !course.schedule) return false;
 
-      setLastUpdated(new Date());
-    } catch (err) {
-      console.error('Failed to fetch teacher stats:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+      const courseDay = course.day.trim().toLowerCase(); 
+      const [hourStr, minStr = '00'] = course.schedule.split(':'); 
+      const courseTime = parseInt(hourStr) * 60 + parseInt(minStr);
+
+      const now = new Date();
+      const daysOfWeek = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
+      const todayIndex = now.getDay(); 
+      const currentDay = daysOfWeek[todayIndex];
+      const currentTime = now.getHours() * 60 + now.getMinutes();
+
+      const courseIndex = daysOfWeek.indexOf(courseDay);
+
+      if (courseIndex === -1) return false;
+
+      if (courseIndex > todayIndex) {
+        return true;
+      } else if (courseIndex === todayIndex && courseTime > currentTime) {
+        return true;
+      }
+
+      return false;
+    });
+
+
+    setUpcomingClasses(upcoming.map(course => ({
+      id: course.id,
+      title: course.title,
+      description: course.description,
+      time: course.schedule,
+      day: course.day,
+      room: course.room,
+    })));
+
+    setLastUpdated(new Date());
+  } catch (err) {
+    console.error('Failed to fetch teacher stats:', err);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   useEffect(() => {
   fetchStats();
@@ -257,21 +285,15 @@ const TeacherDashboard = () => {
                   onPress={() => navigation.navigate('ClassDetails', { classId: classItem.id })}
                 >
                   <View style={styles.classInfo}>
-                    <Text style={styles.className}>{classItem.name}</Text>
+                    <Text style={styles.className}>{classItem.title}</Text>
+                    <Text style={styles.className}>{classItem.description}</Text>
                     <View style={styles.classMeta}>
                       <Icon name="schedule" size={16} color="#636E72" />
-                      <Text style={styles.classTime}>{classItem.time}</Text>
+                      <Text style={styles.classTime}>{classItem.time} , {classItem.day}</Text>
                     </View>
                     <View style={styles.classMeta}>
                       <Icon name="place" size={16} color="#636E72" />
                       <Text style={styles.classRoom}>{classItem.room}</Text>
-                      <View style={styles.attendanceRow}>
-                        <Icon name="bar-chart" size={16} color="#636E72" />
-                        <Text style={styles.attendanceText}>
-                          Attendance Rate: {classItem.attendanceRate}%
-                        </Text>
-                      </View>
-
                     </View>
                   </View>
                   <Icon name="chevron-right" size={24} color="#B2BEC3" />

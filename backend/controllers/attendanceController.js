@@ -43,7 +43,6 @@ exports.getAttendanceSummaryByStudent = async (req, res) => {
 exports.getAttendanceSummaryByTeacher = async (req, res) => {
   try {
     const userId = req.user?.id;
-    console.log('User ID from token(attendance): ', userId);
 
     const teacher = await Teacher.getByUserId(userId);
     if (!teacher) {

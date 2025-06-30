@@ -68,7 +68,6 @@ const AdminDashboard = () => {
     setLoading(true);
     try {
       const res = await axiosInstance.get('/admin/recent-activities');
-      console.log('Activities response:', res.data);
       setActivities(res.data); 
       setLoading(false);
     } catch (error) {
@@ -268,7 +267,7 @@ const AdminDashboard = () => {
                     { icon: '👥', text: 'Manage Users', color: '#6C5CE7', action: () => setShowUserModal(true) },
                     { icon: '➕', text: 'Add Course', color: '#00B894', action: () => navigation.navigate('CourseManagement') },
                     { icon: '📊', text: 'Requests', color: '#FD79A8', action: () => navigation.navigate('PendingRequests') },
-                    { icon: '⚙️', text: 'Settings', color: '#FDCB6E', action: () => navigation.navigate('Settings') },
+                    { icon: '⚙️', text: 'Enrollments', color: '#FDCB6E', action: () => navigation.navigate('EnrollmentManagement') },
                   ].map((item, index) => (
                     <TouchableOpacity
                       key={index}

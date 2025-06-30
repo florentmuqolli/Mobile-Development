@@ -64,7 +64,6 @@ exports.createTeacher = async (req, res) => {
       status: status || 'Active',
       user_id: user._id.toString(),
     });
-    console.log('user: ', req.user.name);
     await ActivityLog.create(req.user.name, 'added a new teacher', '👨‍🏫');
 
     res.status(201).json({
@@ -136,8 +135,7 @@ exports.deleteTeacher = async (req, res) => {
 exports.getTeacherStats = async (req, res) => {
   try {
     const userId = req.user?.id;
-    console.log('User ID from token(stats): ', userId);
-
+    
     const teacher = await Teacher.getByUserId(userId);
     if (!teacher) {
       return res.status(404).json({ message: 'Teacher not found' });
@@ -147,9 +145,6 @@ exports.getTeacherStats = async (req, res) => {
 
     const totalStudents = await Enrollment.countStudentsByTeacherId(teacherId);
     const totalCourses = await Class.countByTeacherId(teacherId);
-
-    console.log('student count: ', totalStudents);
-    console.log('course count: ', totalCourses);
 
     res.json({
       students: { total: totalStudents, new: 0 }, 

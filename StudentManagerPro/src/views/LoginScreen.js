@@ -37,6 +37,8 @@ const Login = () => {
         navigation.replace("AdminDashboard");
       } else if (token && role === "teacher") {
         navigation.replace("TeacherDashboard");
+      } else if (token && role === "student") {
+        navigation.replace("StudentDashboard");
       }
     }
     checkToken();
@@ -73,7 +75,7 @@ const Login = () => {
         } else if (response.data.user.role === "teacher") {
           navigation.replace("TeacherDashboard");
         } else {
-          navigation.replace("StudentHome");
+          navigation.replace("StudentDashboard");
         }
       }, 1000);
     } catch (error) {
