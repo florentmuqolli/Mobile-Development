@@ -78,6 +78,14 @@ const CourseFormModal = ({ visible, onClose, course, refreshCourses }) => {
     }
   };
 
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#6C5CE7" />
+      </View>
+    );
+  }
+
   return (
     <Modal visible={visible} transparent animationType="slide">
       <View style={styles.modalOverlay}>

@@ -1,12 +1,13 @@
 const express = require('express');
 const router = express.Router();
-const assingmentController = require('../controllers/assingmentController');
+const assignmentController = require('../controllers/assignmentController');
 const { authenticateToken, authorizeRoles } = require('../middleware/auth');
 
-router.get('/', authenticateToken, assingmentController.getAllAssignments);
-router.get('/:id', authenticateToken, assingmentController.getAssignmentById);
-router.post('/', authenticateToken, authorizeRoles('admin', 'teacher'), assingmentController.createAssignment);
-router.put('/:id', authenticateToken, authorizeRoles('admin', 'teacher'), assingmentController.updateAssignment);
-router.delete('/:id', authenticateToken, authorizeRoles('admin'), assingmentController.deleteAssignment);
+router.get('/', authenticateToken, authorizeRoles('teacher'), assignmentController.getAssignmentsByTeacher);
+router.get('/:id', authenticateToken, authorizeRoles('teacher'), assignmentController.getAssignmentById);
+router.get('/:id/activity', authenticateToken, authorizeRoles('teacher'), assignmentController.getAssignmentActivity);
+router.post('/', authenticateToken, authorizeRoles('admin', 'teacher'), assignmentController.createAssignment);
+router.put('/:id', authenticateToken, authorizeRoles('admin', 'teacher'), assignmentController.updateAssignment);
+router.delete('/:id', authenticateToken, authorizeRoles('admin'), assignmentController.deleteAssignment);
 
 module.exports = router;

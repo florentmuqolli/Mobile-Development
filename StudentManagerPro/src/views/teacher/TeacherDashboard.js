@@ -249,7 +249,7 @@ const TeacherDashboard = () => {
       </ScrollView>
 
         <View style={styles.tabContainer}>
-          {['classes', 'students', 'resources'].map((tab) => (
+          {['classes', 'students', 'grades'].map((tab) => (
             <TouchableOpacity
               key={tab}
               style={[
@@ -310,7 +310,7 @@ const TeacherDashboard = () => {
                   </View>
                   <Text style={styles.actionText}>New Lesson</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.actionButton}>
+                <TouchableOpacity style={styles.actionButton} onPress={() => navigation.navigate('AssignmentsScreen')}>
                   <View style={[styles.actionIcon, { backgroundColor: '#00B894' }]}>
                     <Icon name="assignment" size={24} color="#FFF" />
                   </View>
@@ -351,10 +351,10 @@ const TeacherDashboard = () => {
             </>
           )}
 
-          {activeTab === 'resources' && (
+          {activeTab === 'grades' && (
             <View style={styles.comingSoonContainer}>
               <Icon name="folder" size={48} color="#DFE6E9" />
-              <Text style={styles.comingSoon}>Resources Hub Coming Soon</Text>
+              <Text style={styles.comingSoon}>Grades Hub Coming Soon</Text>
             </View>
           )}
         </ScrollView>

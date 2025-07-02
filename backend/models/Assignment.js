@@ -1,6 +1,30 @@
 const pool = require('../config/db');
 
 const Assignment = {
+
+  getAllByTeacher: (teacherId) =>
+    pool.query(
+      `SELECT a.* FROM assignments a
+       JOIN classes c ON a.class_id = c.id
+       WHERE c.teacher_id = ?`,
+      [teacherId]
+    ),
+
+  getSubmissionsByAssignment: (assignmentId) =>
+    pool.query(
+      `SELECT s.*, st.user_id
+      FROM submissions s
+      JOIN students st ON s.student_id = st.id
+      WHERE s.assignment_id = ?`,
+      [assignmentId]
+    ),
+
+  countSubmissionsByAssignment: (assignmentId) =>
+    pool.query(
+      `SELECT COUNT(*) AS count FROM submissions WHERE assignment_id = ?`,
+      [assignmentId]
+    ),
+
   getAll: () => pool.query('SELECT * FROM assignments'),
 
   getById: (id) => pool.query('SELECT * FROM assignments WHERE id = ?', [id]),
