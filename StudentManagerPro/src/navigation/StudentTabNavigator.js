@@ -57,11 +57,11 @@ const StudentTabNavigator = () => {
                 break;
               case 'Classes':
                 icon = focused ? <BookFilledIcon /> : <BookIcon />;
-                badgeCount = 2;
+                badgeCount = 0;
                 break;
               case 'Assignments':
                 icon = focused ? <AssignmentFilledIcon /> : <AssignmentIcon />;
-                badgeCount = 5;
+                badgeCount = 0;
                 break;
               case 'Calendar':
                 icon = focused ? <CalendarFilledIcon /> : <CalendarIcon />;
@@ -108,12 +108,12 @@ const StudentTabNavigator = () => {
         <Tab.Screen 
           name="Assignments" 
           component={AssignmentsScreen} 
-          options={{ tabBarLabel: 'Tasks' }}
+          options={{ tabBarLabel: 'Assignment' }}
         />
         <Tab.Screen 
           name="Calendar" 
           component={CalendarScreen} 
-          options={{ tabBarLabel: 'Calendar' }}
+          options={{ tabBarLabel: 'Grades' }}
         />
         <Tab.Screen 
           name="Profile" 

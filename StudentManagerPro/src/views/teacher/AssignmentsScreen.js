@@ -58,7 +58,7 @@ const TeacherAssignmentsScreen = () => {
   };
 
   useEffect(() => {
-    fetchAssignments();
+      fetchAssignments();
   }, []);
 
   if (loading) {
@@ -225,6 +225,12 @@ const styles = StyleSheet.create({
   emptySubtext: {
     fontSize: 14,
     color: '#636E72',
+  },
+  loadingContainer: {
+    flex: 1,
+    backgroundColor: '#F8F9FA',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   assignmentCard: {
     backgroundColor: '#FFF',

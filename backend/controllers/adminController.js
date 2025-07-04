@@ -62,8 +62,6 @@ exports.approveRequest = async (req, res) => {
   }
 };
 
-
-
 exports.denyRequest = async (req, res) => {
   try {
     const pending = await PendingUser.findById(req.params.id);
@@ -81,8 +79,6 @@ exports.denyRequest = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
-
-
 
 exports.getRecentActivities = async (req, res) => {
   try {

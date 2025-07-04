@@ -18,9 +18,9 @@ const TeacherManagementScreen = () => {
   const fetchTeachers = async () => {
     setLoading(true);
     try {
-      const res = await axiosInstance.get('/teachers'); 
-      setLoading(false);
-      setTeachers(res.data);
+      const res = await axiosInstance.get('/teachers');
+        setLoading(false);
+        setTeachers(res.data);
     } catch (err) {
       console.error('Error fetching teachers:', err);
     } finally {
@@ -29,7 +29,7 @@ const TeacherManagementScreen = () => {
   };
 
   useEffect(() => {
-    fetchTeachers();
+      fetchTeachers();
   }, []);
 
   const filteredTeachers = teachers.filter(teacher =>
@@ -38,13 +38,17 @@ const TeacherManagementScreen = () => {
   );
 
   const deleteTeacher = async (id) => {
+    setLoading(true);
     try {
       await axiosInstance.delete(`/teachers/${id}`);
       Toast.show({
         type: "success",
         text1: "Teacher Deleted",
       });
-      setTeachers(teachers.filter(teacher => teacher.id !== id));
+      setTimeout(() => {
+        setLoading(false);
+        setTeachers(teachers.filter(teacher => teacher.id !== id));
+      }, 1000);
     } catch (err) {
       console.error('Error deleting teacher:', err);
     }
@@ -198,6 +202,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     marginLeft: 6,
+  },
+  loadingContainer: {
+    flex: 1,
+    backgroundColor: '#F8F9FA',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   cardContainer: {
     flex: 1,

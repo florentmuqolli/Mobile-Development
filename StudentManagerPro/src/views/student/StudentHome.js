@@ -1,18 +1,71 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
+import axiosInstance from '../../services/axiosInstance';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
+import { RefreshIcon } from '../../assets/Icons';
 import ScreenWrapper from '../../hooks/ScreenWrapper';
 
 const DashboardScreen = () => {
   const [name, setName] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState(null);
+  const [elapsedTime, setElapsedTime] = useState('');
+  const [showLogout, setShowLogout] = useState(false);
 
   useEffect(() => {
+      if (!lastUpdated) return;
+  
+      const interval = setInterval(() => {
+        const secondsAgo = Math.floor((Date.now() - lastUpdated.getTime()) / 1000);
+        if (secondsAgo < 60) {
+          setElapsedTime(`${secondsAgo}s ago`);
+        } else {
+          const minutes = Math.floor(secondsAgo / 60);
+          setElapsedTime(`${minutes}m ago`);
+        }
+      }, 1000); 
+  
+      return () => clearInterval(interval); 
+    }, [lastUpdated]);
+
+    const toggleLogout = () => {
+        if (showLogout) {
+          Animated.timing(logoutTranslateX, {
+            toValue: 0, 
+            duration: 300,
+            useNativeDriver: true,
+          }).start(() => setShowLogout(false));
+        } else {
+          setShowLogout(true);
+          Animated.timing(logoutTranslateX, {
+            toValue: -60, 
+            duration: 300,
+            useNativeDriver: true,
+          }).start();
+        }
+      };
+
     const fetchName = async () => {
-      const storedName = await axiosInstance.get("auth/me");
-      if (storedName) setName(storedName.name);
-      else setName('Student');
+      try {
+        const res = await axiosInstance.get("/auth/me");
+        setLoading(false);
+        setName(res.data.name);
+        setLastUpdated(new Date());
+      } catch (error) {
+        console.error('Failed to load name:', error);
+      }
     };
-    fetchName();
-  }, []);
+
+    useEffect(() => {
+        fetchName();
+      }, []);
+    
+      if (loading) {
+        return (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#6C5CE7" />
+          </View>
+        );
+      }
 
   return (
     <ScreenWrapper>
@@ -26,6 +79,18 @@ const DashboardScreen = () => {
           source={require('../../assets/profile_placeholder.png')} 
           style={styles.profileImage}
         />
+      </View>
+
+      <View style={styles.statusBar}>
+        {elapsedTime && (
+          <Text style={styles.lastUpdated}>Last updated {elapsedTime}</Text>
+        )}
+        <TouchableOpacity style={styles.refreshButton} 
+          onPress={() => {
+            fetchName();
+          }}>
+          <RefreshIcon />
+        </TouchableOpacity>
       </View>
 
       <View style={styles.sectionHeader}>
@@ -115,6 +180,36 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 25,
+  },
+  statusBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 5,
+    marginBottom: 16,
+  },
+  lastUpdated: {
+    color: '#636E72',
+    fontSize: 12,
+  },
+  refreshButton: {
+    backgroundColor: '#6C5CE7',
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  loadingContainer: {
+    flex: 1,
+    backgroundColor: '#F8F9FA',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   sectionHeader: {
     flexDirection: 'row',

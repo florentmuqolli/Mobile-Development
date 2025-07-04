@@ -1,11 +1,35 @@
 const Class = require('../models/Class');
 const Teacher = require('../models/Teacher');
+const User = require('../models/User');
+const Student = require('../models/Student');
 const ActivityLog = require('../models/ActivityLog');
 
 exports.getAllClasses = async (req, res) => {
   try {
     const [rows] = await Class.getAll();
-    res.json(rows);
+    if (rows.length === 0) {
+      return res.status(404).json({ message: 'Class not found' });
+    }
+
+    const userIds = rows
+      .filter(row => row.teacher_user_id) 
+      .map(row => row.teacher_user_id);
+
+    const uniqueUserIds = [...new Set(userIds)];
+
+    const users = await User.find({ _id: { $in: uniqueUserIds } }).select('_id name');
+
+    const userMap = {};
+    users.forEach(user => {
+      userMap[user._id.toString()] = user.name;
+    });
+
+    const enrichedRows = rows.map(row => ({
+      ...row,
+      teacher_name: row.teacher_user_id ? userMap[row.teacher_user_id] || 'Unknown' : 'Unknown',
+    }));
+
+    res.json(enrichedRows);
   } catch (error) {
     console.error('Error getting classes: ', error);
     res.status(500).json({ message: 'Server error' });
@@ -37,6 +61,48 @@ exports.getClassByTeacher = async (req, res) => {
     res.json(rows);
   } catch (error) {
     console.error('Error getting class by teacher: ', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+exports.getClassByStudent = async (req, res) => {
+  try {
+    const userId = req.user?.id;
+
+    const student = await Student.getByUserId(userId);
+    if (!student) {
+      return res.status(404).json({ message: 'Student not found' });
+    }
+
+    const studentId = student.id;
+    const [rows] = await Class.getByStudentId(studentId);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ message: 'Class not found' });
+    }
+
+    const userIds = rows
+      .filter(row => row.teacher_user_id) 
+      .map(row => row.teacher_user_id);
+
+    const uniqueUserIds = [...new Set(userIds)];
+
+    const users = await User.find({ _id: { $in: uniqueUserIds } }).select('_id name');
+
+    const userMap = {};
+    users.forEach(user => {
+      userMap[user._id.toString()] = user.name;
+    });
+
+    const enrichedRows = rows.map(row => ({
+      ...row,
+      teacher_name: row.teacher_user_id ? userMap[row.teacher_user_id] || 'Unknown' : 'Unknown',
+    }));
+
+    res.json(enrichedRows);
+
+  } catch (error) {
+    console.error('Error getting class by student: ', error);
     res.status(500).json({ message: 'Server error' });
   }
 };

@@ -65,23 +65,18 @@ const AdminDashboard = () => {
   };
 
   const fetchRecentActivities = async () => {
-    setLoading(true);
     try {
       const res = await axiosInstance.get('/admin/recent-activities');
       setActivities(res.data); 
-      setLoading(false);
     } catch (error) {
       console.error('Failed to load recent activities:', error);
-      setLoading(false);
     }
   };
 
 
   const fetchStats = async () => {
-    setLoading(true);
     try {
       const res = await axiosInstance.get('/admin/dashboard-stats');
-      setLoading(false);
       const data = res.data;
       setStats([
         {
@@ -110,9 +105,7 @@ const AdminDashboard = () => {
       setLastUpdated(new Date());
     } catch (err) {
       console.error('Failed to load dashboard stats:', err);
-    } finally {
-      setLoading(false);
-    }
+    } 
   };
 
   useEffect(() => {
@@ -281,7 +274,7 @@ const AdminDashboard = () => {
                     </TouchableOpacity>
                   ))}
                 </View>
-                </>
+            </>
           )}
 
           {activeTab === 'reports' && (
@@ -379,6 +372,12 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 6,
     elevation: 3,
+  },
+  loadingContainer: {
+    flex: 1,
+    backgroundColor: '#F8F9FA',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   statsScrollContainer: {
     paddingHorizontal: 8,

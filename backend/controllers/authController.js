@@ -151,9 +151,28 @@ exports.logout = (req, res) => {
 exports.getUserProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select("-password");
-    console.log('user id: ',req.user.id);
     if (!user) return res.status(404).json({ message: "User not found" });
-    res.status(200).json(user);
+
+    const userId = req.user.id;
+
+    const studentObj = await Student.getByUserId(userId);
+    if (!studentObj) {
+      return res.status(404).json({ message: 'Student not found' });
+    }
+    const studentId = studentObj.id;
+
+    const [studentRows] = await Student.getById(studentId);
+    if (!studentRows || studentRows.length === 0) {
+      return res.status(404).json({ message: 'Student details not found' });
+    }
+    const student = studentRows[0];
+    console.log('student: ',student);
+
+    res.status(200).json({
+      ...user.toObject(),
+      studentId: student.id,
+      studentStatus: student.status,
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });

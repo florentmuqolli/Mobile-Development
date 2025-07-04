@@ -10,6 +10,17 @@ const Assignment = {
       [teacherId]
     ),
 
+    getAllByStudent: (studentId) =>
+      pool.query(
+        `SELECT a.*
+        FROM assignments a
+        JOIN classes c ON a.class_id = c.id
+        JOIN enrollments e ON e.class_id = c.id
+        WHERE e.student_id = ?`,
+        [studentId]
+      ),
+
+
   getSubmissionsByAssignment: (assignmentId) =>
     pool.query(
       `SELECT s.*, st.user_id

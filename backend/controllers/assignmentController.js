@@ -1,25 +1,44 @@
 const Assignment = require('../models/Assignment');
 const User = require('../models/User');
 const Teacher = require('../models/Teacher');
+const Student = require('../models/Student');
 
-exports.getAssignmentsByTeacher = async (req, res) => {
+exports.getAssignmentsByRole = async (req, res) => {
   try {
     const userId = req.user?.id;
-    
-    const teacher = await Teacher.getByUserId(userId);
-    if (!teacher) {
-      return res.status(404).json({ message: 'Teacher not found' });
+    const role = req.user?.role;
+
+    if (!userId || !role) {
+      return res.status(400).json({ message: 'Invalid user data' });
     }
 
-    const teacherId = teacher.id;
-    const [assignments] = await Assignment.getAllByTeacher(teacherId);
+    if (role === 'teacher') {
+      const teacher = await Teacher.getByUserId(userId);
+      if (!teacher) {
+        return res.status(404).json({ message: 'Teacher not found' });
+      }
+      const teacherId = teacher.id;
+      const [assignments] = await Assignment.getAllByTeacher(teacherId);
+      return res.json(assignments);
 
-    res.json(assignments);
+    } else if (role === 'student') {
+      const student = await Student.getByUserId(userId);
+      if (!student) {
+        return res.status(404).json({ message: 'Student not found' });
+      }
+      const studentId = student.id;
+      const [assignments] = await Assignment.getAllByStudent(studentId);
+      return res.json(assignments);
+
+    } else {
+      return res.status(403).json({ message: 'Unauthorized role' });
+    }
   } catch (error) {
-    console.error('Get assignments by teacher error:', error);
+    console.error('Get assignments error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
+
 
 exports.getAssignmentActivity = async (req, res) => {
   try {

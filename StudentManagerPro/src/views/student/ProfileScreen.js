@@ -1,24 +1,30 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, ActivityIndicator, Image, TouchableOpacity } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useNavigation } from '@react-navigation/native';
+import axiosInstance from "../../services/axiosInstance";
 import useLogout from "../../hooks/Logout";
 import ScreenWrapper from "../../hooks/ScreenWrapper";
 
 const ProfileScreen = () => {
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null);
+  const navigation = useNavigation();
   const handleLogout = useLogout(setLoading);
-  const [user, setUser] = useState({
-    name: "John Doe",
-    email: "student@example.com",
-    studentId: "STD2025001",
-    major: "Computer Science"
-  });
 
   useEffect(() => {
-    (async () => {
-      const storedEmail = await AsyncStorage.getItem("userEmail");
-      if (storedEmail) setUser(prev => ({...prev, email: storedEmail}));
-    })();
+    const fetchUser = async () => {
+      try {
+        const response = await axiosInstance.get('/auth/me');
+        const userData = response.data;
+        setUser(userData);
+      } catch (error) {
+        console.error('Error fetching user data: ', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUser();
   }, []);
 
   if (loading) {
@@ -29,51 +35,63 @@ const ProfileScreen = () => {
     );
   }
 
+  if (!user) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text style={{ color: '#636E72' }}>User not found.</Text>
+      </View>
+    );
+  }
+
   return (
     <ScreenWrapper>
-    <View style={styles.container}>
-      <View style={styles.profileHeader}>
-        <Image 
-          source={require('../../assets/profile_placeholder.png')} 
-          style={styles.profileImage}
-        />
-        <Text style={styles.profileName}>{user.name}</Text>
-        <Text style={styles.profileEmail}>{user.email}</Text>
-      </View>
-
-      <View style={styles.profileInfo}>
-        <View style={styles.infoCard}>
-          <Text style={styles.infoTitle}>Student ID</Text>
-          <Text style={styles.infoValue}>{user.studentId}</Text>
+      <View style={styles.container}>
+        <View style={styles.profileHeader}>
+          <Image
+            source={require('../../assets/profile_placeholder.png')}
+            style={styles.profileImage}
+          />
+          <Text style={styles.profileName}>{user.name}</Text>
+          <Text style={styles.profileEmail}>{user.email}</Text>
         </View>
-        <View style={styles.infoCard}>
-          <Text style={styles.infoTitle}>Major</Text>
-          <Text style={styles.infoValue}>{user.major}</Text>
+
+        <View style={styles.profileInfo}>
+          <View style={styles.infoCard}>
+            <Text style={styles.infoTitle}>Student ID</Text>
+            <Text style={styles.infoValue}>{user.studentId}</Text>
+          </View>
+          <View style={styles.infoCard}>
+            <Text style={styles.infoTitle}>Status</Text>
+            <Text style={styles.infoValue}>{user.studentStatus}</Text>
+          </View>
         </View>
-      </View>
 
-      <View style={styles.menu}>
-        <TouchableOpacity style={styles.menuItem}>
-          <Image source={require('../../assets/icon_settings.png')} style={styles.menuIcon} />
-          <Text style={styles.menuText}>Settings</Text>
-          <Image source={require('../../assets/icon_arrow_right.png')} style={styles.arrowIcon} />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.menuItem}>
-          <Image source={require('../../assets/icon_help.png')} style={styles.menuIcon} />
-          <Text style={styles.menuText}>Help & Support</Text>
-          <Image source={require('../../assets/icon_arrow_right.png')} style={styles.arrowIcon} />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.menuItem}>
-          <Image source={require('../../assets/icon_about.png')} style={styles.menuIcon} />
-          <Text style={styles.menuText}>About</Text>
-          <Image source={require('../../assets/icon_arrow_right.png')} style={styles.arrowIcon} />
+        <View style={styles.menu}>
+
+          <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('ComingSoon')}>
+            <Image source={require('../../assets/icon_settings.png')} style={styles.menuIcon} />
+            <Text style={styles.menuText}>Settings</Text>
+            <Image source={require('../../assets/icon_arrow_right.png')} style={styles.arrowIcon} />
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('ComingSoon')}>
+            <Image source={require('../../assets/icon_help.png')} style={styles.menuIcon} />
+            <Text style={styles.menuText}>Help & Support</Text>
+            <Image source={require('../../assets/icon_arrow_right.png')} style={styles.arrowIcon} />
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('ComingSoon')}>
+            <Image source={require('../../assets/icon_about.png')} style={styles.menuIcon} />
+            <Text style={styles.menuText}>About</Text>
+            <Image source={require('../../assets/icon_arrow_right.png')} style={styles.arrowIcon} />
+          </TouchableOpacity>
+
+        </View>
+
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+          <Text style={styles.logoutText}>Logout</Text>
         </TouchableOpacity>
       </View>
-
-      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-        <Text style={styles.logoutText}>Logout</Text>
-      </TouchableOpacity>
-    </View>
     </ScreenWrapper>
   );
 };

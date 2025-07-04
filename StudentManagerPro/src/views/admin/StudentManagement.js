@@ -29,7 +29,7 @@ const StudentManagementScreen = () => {
   };
 
   useEffect(() => {
-    fetchStudents();
+      fetchStudents();
   }, []);
 
   const filteredStudents = students.filter(student =>
@@ -38,13 +38,17 @@ const StudentManagementScreen = () => {
   );
 
   const deleteStudent = async (id) => {
+    setLoading(true);
     try {
       await axiosInstance.delete(`/students/${id}`);
       Toast.show({
         type: "success",
         text1: "Student Deleted",
       });
-      setStudents(students.filter(student => student.id !== id));
+      setTimeout(() => {
+        setLoading(false);
+        setStudents(students.filter(student => student.id !== id));
+      }, 1000);
     } catch (err) {
       console.error('Error deleting student:', err);
     }
@@ -198,6 +202,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     marginLeft: 6,
+  },
+  loadingContainer: {
+    flex: 1,
+    backgroundColor: '#F8F9FA',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   cardContainer: {
     flex: 1,

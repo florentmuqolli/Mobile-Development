@@ -3,56 +3,48 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Activi
 import { useNavigation } from '@react-navigation/native';
 import axiosInstance from '../../services/axiosInstance'; 
 import ScreenWrapper from '../../hooks/ScreenWrapper';
-import { SearchIcon, EditIcon, DeleteIcon, BackArrowIcon, AddIcon } from '../../assets/Icons';
-import Toast from 'react-native-toast-message';
-import  CourseFormModal  from './utils/CourseFormModal';
+import { SearchIcon, BackArrowIcon} from '../../assets/Icons';
 
-const CourseManagementScreen = () => {
+const MyClasses = () => {
   const navigation = useNavigation();
   const [searchQuery, setSearchQuery] = useState('');
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [selectedCourse, setSelectedCourse] = useState(null);
 
   const fetchCourses = async () => {
     setLoading(true);
     try {
-      const res = await axiosInstance.get('/class'); 
-      setLoading(false);
-      setCourses(res.data);
+        const res = await axiosInstance.get('/class/specific-class');
+        const coursesWithCounts = await Promise.all(
+        res.data.map(async (course) => {
+            try {
+            const countRes = await axiosInstance.get(`/enrollment/total`);
+            return {
+                ...course,
+                totalStudents: countRes.data.totalStudents,
+            };
+            } catch (err) {
+            console.error(`Error fetching student count for class ${course.id}:`, err);
+            return { ...course, totalStudents: 0 };
+            }
+        })
+        );
+        setCourses(coursesWithCounts);
     } catch (err) {
-      console.error('Error fetching courses:', err);
+        console.error('Error fetching courses:', err);
     } finally {
-      setLoading(false);
+        setLoading(false);
     }
   };
 
   useEffect(() => {
-      fetchCourses();
+    fetchCourses();
   }, []);
 
   const filteredCourses = courses.filter(course =>
     course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     course.description.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
-  const deleteCourse = async (id) => {
-    setLoading(true);
-    try {
-      await axiosInstance.delete(`/class/${id}`);
-      Toast.show({
-        type: "success",
-        text1: "Course Deleted",
-      });
-      setTimeout(() => {
-        setLoading(false);
-        setCourses(courses.filter(course => course.id !== id));
-      }, 1000);
-    } catch (err) {
-      console.error('Error deleting course:', err);
-    }
-  };
 
   if (loading) {
     return (
@@ -69,7 +61,7 @@ const CourseManagementScreen = () => {
           <TouchableOpacity onPress={() => navigation.goBack()}>
             <BackArrowIcon/>
           </TouchableOpacity>
-          <Text style={styles.title}>Course Management</Text>
+          <Text style={styles.title}>My Courses</Text>
           <View style={{ width: 24 }} />
         </View>
         <View style={styles.actionBar}>
@@ -83,16 +75,6 @@ const CourseManagementScreen = () => {
               placeholderTextColor="#999"
             />
           </View>
-          <TouchableOpacity 
-            style={styles.addButton}
-            onPress={() => {
-              setSelectedCourse(null);
-              setModalVisible(true);
-            }}
-          >
-            <AddIcon/>
-            <Text style={styles.addButtonText}>Add</Text>
-          </TouchableOpacity>
         </View>
         <ScrollView style={styles.cardContainer}>
           {loading ? (
@@ -111,42 +93,16 @@ const CourseManagementScreen = () => {
                   </View>
                 </View>
                 <Text style={styles.cardEmail}>Description: {course.description}</Text>
-                <Text style={styles.cardEmail}>Teacher ID: {course.teacher_id}</Text>
                 <Text style={styles.cardEmail}>Schedule: {course.schedule}</Text>
                 <Text style={styles.cardEmail}>Day: {course.day}</Text>
                 <Text style={styles.cardEmail}>Room: {course.room}</Text>
-                <View style={styles.cardActions}>
-                  <TouchableOpacity
-                    style={styles.cardButton}
-                    onPress={() => {
-                      setSelectedCourse(course);
-                      setModalVisible(true);
-                    }}
-                  >
-                    <EditIcon size={16} />
-                    <Text style={styles.cardButtonText}>Edit</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={[styles.cardButton, { backgroundColor: '#FFEBEE' }]}
-                    onPress={() => deleteCourse(course.id)}
-                  >
-                    <DeleteIcon size={16} color="#FF5252" />
-                    <Text style={[styles.cardButtonText, { color: '#FF5252' }]}>Delete</Text>
-                  </TouchableOpacity>
-                </View>
+                <Text style={styles.cardEmail}>Total Students: {course.totalStudents}</Text>
               </View>
             ))
           )}
         </ScrollView>
       </View>
-      <CourseFormModal
-        visible={modalVisible}
-        onClose={() => setModalVisible(false)}
-        course={selectedCourse}
-        refreshCourses={fetchCourses}
-      />
     </ScreenWrapper>
-    
   );
 };
 
@@ -205,12 +161,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginLeft: 6,
   },
-  loadingContainer: {
-    flex: 1,
-    backgroundColor: '#F8F9FA',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   cardContainer: {
     flex: 1,
     padding: 8,
@@ -242,25 +192,6 @@ const styles = StyleSheet.create({
     color: '#636E72',
     marginBottom: 12,
   },
-  cardActions: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-  },
-  cardButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#EDE7F6',
-    borderRadius: 8,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    marginLeft: 10,
-  },
-  cardButtonText: {
-    fontSize: 14,
-    color: '#6C5CE7',
-    marginLeft: 6,
-    fontWeight: '500',
-  },
   statusBadge: {
     paddingHorizontal: 6,
     paddingVertical: 3,
@@ -278,4 +209,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default CourseManagementScreen;
+export default MyClasses;

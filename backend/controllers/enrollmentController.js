@@ -1,5 +1,24 @@
 const Enrollment = require('../models/Enrollment');
 const ActivityLog = require('../models/ActivityLog');
+const Teacher = require('../models/Teacher');
+
+exports.getTotalStudentsByTeacher = async (req, res) => {
+  try {
+    const userId = req.user?.id;
+        
+    const teacher = await Teacher.getByUserId(userId);
+    if (!teacher) {
+      return res.status(404).json({ message: 'Teacher not found' });
+    }
+
+    const teacherId = teacher.id;
+    const totalStudents = await Enrollment.countStudentsByTeacherId(teacherId);
+    res.status(200).json({ totalStudents });
+  } catch (err) {
+    console.error('Error fetching total students:', err);
+    res.status(500).json({ error: 'Failed to get total students' });
+  }
+};
 
 exports.getAllEnrollments = async (req, res) => {
   try {

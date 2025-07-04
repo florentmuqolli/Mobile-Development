@@ -14,6 +14,8 @@ import AdminPendingRequestsScreen from '../views/admin/utils/PendingRequestsScre
 import TeacherDashboard from '../views/teacher/TeacherDashboard';
 import HomeScreen from '../views/HomeScreen';
 import AssignmentsScreen from '../views/teacher/AssignmentsScreen';
+import MyClasses from '../views/teacher/MyClasses';
+import ComingSoonScreen from '../views/ComingSoonScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -34,6 +36,8 @@ const AppNavigator = () => {
         <Stack.Screen name="PendingRequests" component={AdminPendingRequestsScreen} options={{ headerShown: false }} />
         <Stack.Screen name="TeacherDashboard" component={TeacherDashboard} options={{ headerShown: false }} />
         <Stack.Screen name="AssignmentsScreen" component={AssignmentsScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="MyClasses" component={MyClasses} options={{ headerShown: false }} />
+        <Stack.Screen name="ComingSoon" component={ComingSoonScreen} options={{ headerShown: false }} />
       </Stack.Navigator>
     </NavigationContainer>
   );
