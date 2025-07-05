@@ -50,7 +50,6 @@ exports.getClassById = async (req, res) => {
 exports.getClassByTeacher = async (req, res) => {
   try {
     const userId = req.user?.id;
-    
     const teacher = await Teacher.getByUserId(userId);
     if (!teacher) {
       return res.status(404).json({ message: 'Teacher not found' });

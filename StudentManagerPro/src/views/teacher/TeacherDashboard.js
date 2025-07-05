@@ -80,6 +80,48 @@ const TeacherDashboard = () => {
     }
   };
 
+  const getUpcomingClasses = (classes) => {
+  const daysOfWeek = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+  const now = new Date();
+  const todayIndex = now.getDay();
+  const currentTimeInMinutes = now.getHours() * 60 + now.getMinutes();
+
+  return classes.filter(course => {
+    if (!course.day || !course.schedule) return false;
+
+    // Clean schedule string: remove all spaces
+    const cleanSchedule = course.schedule.replace(/\s/g, '');
+    // Split into hour and minute parts
+    const [hourStr, minStr = '00'] = cleanSchedule.split(':');
+
+    // Defensive parseInt with radix 10
+    const courseHour = parseInt(hourStr, 10);
+    const courseMinute = parseInt(minStr, 10);
+    if (isNaN(courseHour) || isNaN(courseMinute)) return false;
+
+    // Convert course time to minutes from midnight
+    const courseTimeInMinutes = courseHour * 60 + courseMinute;
+
+    // Normalize the course day string and get its index
+    const courseDayIndex = daysOfWeek.indexOf(course.day.trim().toLowerCase());
+    if (courseDayIndex === -1) return false;
+
+    // Logic for upcoming classes:
+    // 1. If the class is scheduled later in the week (courseDayIndex > todayIndex), it’s upcoming
+    if (courseDayIndex > todayIndex) {
+      return true;
+    }
+    // 2. If the class is today and time is later than now, it’s upcoming
+    if (courseDayIndex === todayIndex && courseTimeInMinutes > currentTimeInMinutes) {
+      return true;
+    }
+
+    // Otherwise, class is not upcoming
+    return false;
+  });
+};
+
+
   const fetchStats = async () => {
     setLoading(true);
     try {
@@ -124,31 +166,7 @@ const TeacherDashboard = () => {
         },
       ]);
 
-      const upcoming = specificClass.filter((course) => {
-        if (!course.day || !course.schedule) return false;
-
-        const courseDay = course.day.trim().toLowerCase(); 
-        const [hourStr, minStr = '00'] = course.schedule.split(':'); 
-        const courseTime = parseInt(hourStr) * 60 + parseInt(minStr);
-
-        const now = new Date();
-        const daysOfWeek = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
-        const todayIndex = now.getDay(); 
-        const currentDay = daysOfWeek[todayIndex];
-        const currentTime = now.getHours() * 60 + now.getMinutes();
-
-        const courseIndex = daysOfWeek.indexOf(courseDay);
-
-        if (courseIndex === -1) return false;
-
-        if (courseIndex > todayIndex) {
-          return true;
-        } else if (courseIndex === todayIndex && courseTime > currentTime) {
-          return true;
-        }
-
-        return false;
-      });
+      const upcoming = getUpcomingClasses(specificClass);
 
       setUpcomingClasses(upcoming.map(course => ({
         id: course.id,
@@ -357,7 +375,7 @@ const TeacherDashboard = () => {
                       icon: '📊', 
                       text: 'Grades', 
                       color: '#9C27B0', 
-                      action: () => navigation.navigate('EnrollmentManagement') 
+                      action: () => navigation.navigate('TeacherGradesScreen') 
                     },
                     { 
                       icon: '👥', 

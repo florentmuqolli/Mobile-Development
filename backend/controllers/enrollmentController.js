@@ -1,5 +1,6 @@
 const Enrollment = require('../models/Enrollment');
 const ActivityLog = require('../models/ActivityLog');
+const Student = require("../models/Student");
 const Teacher = require('../models/Teacher');
 
 exports.getTotalStudentsByTeacher = async (req, res) => {
@@ -30,14 +31,17 @@ exports.getAllEnrollments = async (req, res) => {
   }
 };
 
-exports.getEnrollmentById = async (req, res) => {
+exports.getEnrolledStudents = async (req, res) => {
   try {
-    const [rows] = await Enrollment.getById(req.params.id);
-    if (rows.length === 0) return res.status(404).json({ message: 'Enrollment not found' });
-    res.json(rows[0]);
+    const classId = req.params.classId;
+
+    const [students] = await Enrollment.getStudentsByClassId(classId);
+
+    res.json(students);
+    
   } catch (error) {
-    console.error("Error getting enrollment:", error);
-    res.status(500).json({ message: 'Server error' });
+    console.error("Error fetching enrolled students:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 

@@ -2,7 +2,7 @@ const db = require('../config/db');
 
 const Class = {
   getAll: () => db.query(`
-    SELECT c.id, c.title, c.description, c.day, c.schedule, c.room, c.status, t.user_id AS teacher_user_id
+    SELECT c.id, c.title, c.description, c.day, c.schedule, c.teacher_id, c.room, c.status, t.user_id AS teacher_user_id
     FROM classes c
     LEFT JOIN teachers t ON c.teacher_id = t.id
   `),

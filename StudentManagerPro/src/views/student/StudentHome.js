@@ -138,7 +138,7 @@ const DashboardScreen = () => {
       <View style={styles.quickActions}>
         <TouchableOpacity style={styles.actionButton}>
           <Image source={require('../../assets/icon_calendar.png')} style={styles.actionIcon} />
-          <Text style={styles.actionText}>Calendar</Text>
+          <Text style={styles.actionText}>Grades</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.actionButton}>
           <Image source={require('../../assets/icon_assignments.png')} style={styles.actionIcon} />

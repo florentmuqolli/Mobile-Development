@@ -27,46 +27,29 @@ const AssignmentsScreen = () => {
     fetchAssignments();
   }, []);
 
-  const getCourseColor = (course) => {
-    const colors = {
-      Mathematics: "#6C5CE7",
-      English: "#00B894",
-      Physics: "#FD79A8",
-    };
-    return colors[course] || "#636E72";
-  };
-
-  const getStatusColor = (status) => {
-    const colors = {
-      Pending: "#FDCB6E",
-      "In Progress": "#74B9FF",
-      "Not Started": "#FF7675",
-    };
-    return colors[status] || "#636E72";
-  };
-
   const renderItem = ({ item }) => (
-    <TouchableOpacity style={styles.assignmentCard}>
-      <View style={styles.assignmentHeader}>
-        <View style={[styles.courseIcon, { backgroundColor: getCourseColor(item.course) }]}>
-          <Text style={styles.courseInitial}>{item.course?.charAt(0) ?? "?"}</Text>
-        </View>
-        <View>
-          <Text style={styles.courseName}>{item.course}</Text>
-          <Text style={styles.dueDate}>{item.dueDate}</Text>
-        </View>
+  <TouchableOpacity style={styles.assignmentCard}>
+    <View style={styles.assignmentHeader}>
+      <View style={[styles.courseIcon, { backgroundColor: '#6C5CE7' }]}>
+        <Text style={styles.courseInitial}>{item.course?.charAt(0) ?? "?"}</Text>
       </View>
-      <Text style={styles.assignmentTitle}>{item.title}</Text>
-      <View style={styles.statusContainer}>
-        <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) }]}>
-          <Text style={styles.statusText}>{item.status}</Text>
-        </View>
-        <View style={styles.priorityBadge}>
-          <Text style={styles.priorityText}>{item.priority} Priority</Text>
-        </View>
+      <View>
+        <Text style={styles.courseName}>{item.class_id || 'Unknown Course'}</Text>
+        <Text style={styles.dueDate}>{item.due_date || 'No due date'}</Text>
       </View>
-    </TouchableOpacity>
-  );
+    </View>
+    <Text style={styles.assignmentTitle}>{item.title || 'Untitled Assignment'}</Text>
+    <View style={styles.statusContainer}>
+      <View style={[styles.statusBadge, { backgroundColor: '#74B9FF' }]}>
+        <Text style={styles.statusText}>{item.description || 'Unknown Description'}</Text>
+      </View>
+      <View style={styles.priorityBadge}>
+        <Text style={styles.priorityText}>{item.priority ? `${item.priority} Priority` : 'No Priority'}</Text>
+      </View>
+    </View>
+  </TouchableOpacity>
+);
+
 
   if (loading) {
     return (

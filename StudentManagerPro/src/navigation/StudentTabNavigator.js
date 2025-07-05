@@ -4,8 +4,8 @@ import { View, StyleSheet, Animated, Text } from 'react-native';
 import StudentHome from '../views/student/StudentHome';
 import ClassesScreen from '../views/student/ClassesScreen';
 import AssignmentsScreen from '../views/student/AssignmentsScreen';
-import CalendarScreen from '../views/student/CalendarScreen';
 import ProfileScreen from '../views/student/ProfileScreen';
+import GradesScreen from '../views/student/GradesScreen';
 import { 
   HomeIcon, 
   HomeFilledIcon,
@@ -63,7 +63,7 @@ const StudentTabNavigator = () => {
                 icon = focused ? <AssignmentFilledIcon /> : <AssignmentIcon />;
                 badgeCount = 0;
                 break;
-              case 'Calendar':
+              case 'Grades':
                 icon = focused ? <CalendarFilledIcon /> : <CalendarIcon />;
                 badgeCount = 0;
                 break;
@@ -111,8 +111,8 @@ const StudentTabNavigator = () => {
           options={{ tabBarLabel: 'Assignment' }}
         />
         <Tab.Screen 
-          name="Calendar" 
-          component={CalendarScreen} 
+          name="Grades" 
+          component={GradesScreen} 
           options={{ tabBarLabel: 'Grades' }}
         />
         <Tab.Screen 

@@ -14,6 +14,7 @@ const classRoutes = require('./routes/classRoutes');
 const assignmentRoutes = require('./routes/assignmentRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const attendanceRoutes = require('./routes/attendanceRoutes');
+const gradeRoutes = require('./routes/gradeRoutes');
 
 const app = express();
 
@@ -53,6 +54,7 @@ app.use('/api/class', classRoutes);
 app.use('/api/assignment', assignmentRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/attendance', attendanceRoutes);
+app.use('/api/grades', gradeRoutes);
 
 
 app.use((err, req, res, next) => {
